@@ -11,5 +11,10 @@
         public string? City { get; set; }
         public string? AddressLine { get; set; }
         public string? ProfilePicture { get; set; }
+
+        public UserData()
+        {
+
+        }
     }
 }

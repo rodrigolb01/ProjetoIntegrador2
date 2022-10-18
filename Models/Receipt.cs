@@ -13,5 +13,10 @@ namespace Expenses_Manager.Models
         public bool PendingPayments { get; set; }
         [NotMapped]
         public SelectList? Expenses { get; set; }
+
+        public Receipt()
+        {
+
+        }
     }
 }

@@ -17,8 +17,13 @@ namespace Expenses_Manager.Models
         public int? Installments { get; set; }
         public int CategoryId { get; set; }
         [NotMapped]
-        public SelectList? AvailableCategories { get; set; }
+        public SelectList AvailableCategories { get; set; }
         [NotMapped]
-        public SelectList? AvailablePaymentMethods { get; set; }
+        public SelectList AvailablePaymentMethods { get; set; }
+
+        public Expense()
+        {
+
+        }
     }
 }

@@ -10,5 +10,10 @@
         public DateTime ExpirationDate { get; set; }
         public double? LimitValue { get; set; }
         public double CurrentValue { get; set; }
+
+        public Card()
+        {
+
+        }
     }
 }
