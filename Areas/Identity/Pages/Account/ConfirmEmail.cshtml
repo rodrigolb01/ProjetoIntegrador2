@@ -1,0 +1,9 @@
+﻿@page
+@model ConfirmEmailModel
+@{
+    ViewData["Title"] = "Confirm email";
+}
+
+<h1>@ViewData["Title"]</h1>
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+<a class="nav-link text-dark" asp-area="" asp-controller="UserData" asp-action="Create">Let's setup your user profile!</a>

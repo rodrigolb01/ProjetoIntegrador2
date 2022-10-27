@@ -46,6 +46,7 @@ namespace Expenses_Manager.Controllers
         // GET: UserData/Create
         public IActionResult Create()
         {
+            //string userId = _context.Users.
             return View();
         }
 
@@ -54,7 +55,7 @@ namespace Expenses_Manager.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,UserId,Name,PhoneNumber,MailAddress,State,City,AddressLine,ProfilePicture")] UserData userData)
+        public async Task<IActionResult> Create([Bind("Id,UserId,Name,State,City,AddressLine,ProfilePicture")] UserData userData)
         {
             if (ModelState.IsValid)
             {
@@ -86,7 +87,7 @@ namespace Expenses_Manager.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,UserId,Name,PhoneNumber,MailAddress,State,City,AddressLine,ProfilePicture")] UserData userData)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,UserId,Name,State,City,AddressLine,ProfilePicture")] UserData userData)
         {
             if (id != userData.Id)
             {
