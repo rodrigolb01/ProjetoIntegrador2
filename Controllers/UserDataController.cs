@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Expenses_Manager.Data;
 using Expenses_Manager.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Expenses_Manager.Controllers
 {
@@ -20,12 +21,14 @@ namespace Expenses_Manager.Controllers
         }
 
         // GET: UserData
+        [Authorize]
         public async Task<IActionResult> Index()
         {
               return View(await _context.UserData.ToListAsync());
         }
 
         // GET: UserData/Details/5
+        [Authorize]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null || _context.UserData == null)
@@ -44,6 +47,7 @@ namespace Expenses_Manager.Controllers
         }
 
         // GET: UserData/Create
+        [Authorize]
         public IActionResult Create()
         {
             //string userId = _context.Users.
@@ -53,12 +57,16 @@ namespace Expenses_Manager.Controllers
         // POST: UserData/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,UserId,Name,State,City,AddressLine,ProfilePicture")] UserData userData)
         {
             if (ModelState.IsValid)
             {
+                var user = _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+                userData.UserId = user.Result.Id;
+
                 _context.Add(userData);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -67,6 +75,7 @@ namespace Expenses_Manager.Controllers
         }
 
         // GET: UserData/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.UserData == null)
@@ -85,6 +94,7 @@ namespace Expenses_Manager.Controllers
         // POST: UserData/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,UserId,Name,State,City,AddressLine,ProfilePicture")] UserData userData)
@@ -98,6 +108,9 @@ namespace Expenses_Manager.Controllers
             {
                 try
                 {
+                    var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+                    userData.UserId = user.Id;
+
                     _context.Update(userData);
                     await _context.SaveChangesAsync();
                 }
@@ -118,6 +131,7 @@ namespace Expenses_Manager.Controllers
         }
 
         // GET: UserData/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.UserData == null)
@@ -136,6 +150,7 @@ namespace Expenses_Manager.Controllers
         }
 
         // POST: UserData/Delete/5
+        [Authorize]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

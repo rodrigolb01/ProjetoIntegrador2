@@ -7,7 +7,7 @@ namespace Expenses_Manager.Models
     public class Expense
     {
         public int Id { get; set; }
-        public string UserId { get; set; }
+        public string UserId { get; set; } = "";
         public int ReceiptId { get; set; }
         public DateTime date { get; set; }
         public string? Name { get; set; }

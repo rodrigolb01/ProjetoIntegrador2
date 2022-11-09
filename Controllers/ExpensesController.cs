@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Expenses_Manager.Data;
 using Expenses_Manager.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Expenses_Manager.Controllers
 {
@@ -61,10 +62,14 @@ namespace Expenses_Manager.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Create([Bind("Id,UserId,ReceiptId,date,Name,Value,PaymentMethodId,Status,Installments,CategoryId")] Expense expense)
         {
             if (ModelState.IsValid)
             {
+                var user = _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+                expense.UserId = user.Result.Id;
+
                 _context.Add(expense);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -73,6 +78,7 @@ namespace Expenses_Manager.Controllers
         }
 
         // GET: Expenses/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Expense == null)
@@ -91,6 +97,7 @@ namespace Expenses_Manager.Controllers
         // POST: Expenses/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,UserId,ReceiptId,date,Name,Value,PaymentMethodId,Status,Installments,CategoryId")] Expense expense)
@@ -104,6 +111,9 @@ namespace Expenses_Manager.Controllers
             {
                 try
                 {
+                    var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+                    expense.UserId = user.Id;
+
                     _context.Update(expense);
                     await _context.SaveChangesAsync();
                 }
@@ -124,6 +134,7 @@ namespace Expenses_Manager.Controllers
         }
 
         // GET: Expenses/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Expense == null)
@@ -142,6 +153,7 @@ namespace Expenses_Manager.Controllers
         }
 
         // POST: Expenses/Delete/5
+        [Authorize]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

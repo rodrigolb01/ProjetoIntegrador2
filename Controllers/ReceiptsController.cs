@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Expenses_Manager.Data;
 using Expenses_Manager.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Expenses_Manager.Controllers
 {
@@ -20,12 +21,14 @@ namespace Expenses_Manager.Controllers
         }
 
         // GET: Receipts
+        [Authorize]
         public async Task<IActionResult> Index()
         {
               return View(await _context.Receipt.ToListAsync());
         }
 
         // GET: Receipts/Details/5
+        [Authorize]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null || _context.Receipt == null)
@@ -44,6 +47,7 @@ namespace Expenses_Manager.Controllers
         }
 
         // GET: Receipts/Create
+        [Authorize]
         public IActionResult Create()
         {
             return View();
@@ -54,10 +58,14 @@ namespace Expenses_Manager.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Create([Bind("Id,UserId,Month,Year,TotalValue,PendingPayments")] Receipt receipt)
         {
             if (ModelState.IsValid)
             {
+                var user = _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+                receipt.UserId = user.Result.Id;
+
                 _context.Add(receipt);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -66,6 +74,7 @@ namespace Expenses_Manager.Controllers
         }
 
         // GET: Receipts/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Receipt == null)
@@ -84,6 +93,7 @@ namespace Expenses_Manager.Controllers
         // POST: Receipts/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,UserId,Month,Year,TotalValue,PendingPayments")] Receipt receipt)
@@ -97,6 +107,9 @@ namespace Expenses_Manager.Controllers
             {
                 try
                 {
+                    var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+                    receipt.UserId = user.Id;
+
                     _context.Update(receipt);
                     await _context.SaveChangesAsync();
                 }
@@ -117,6 +130,7 @@ namespace Expenses_Manager.Controllers
         }
 
         // GET: Receipts/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Receipt == null)
@@ -137,6 +151,7 @@ namespace Expenses_Manager.Controllers
         // POST: Receipts/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             if (_context.Receipt == null)
