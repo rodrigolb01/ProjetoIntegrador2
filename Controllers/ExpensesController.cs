@@ -68,7 +68,7 @@ namespace Expenses_Manager.Controllers
 
                 _context.Add(expense);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return Redirect("/Receipts/Index");
             }
             return View(expense);
         }
@@ -87,6 +87,12 @@ namespace Expenses_Manager.Controllers
             {
                 return NotFound();
             }
+            var categoriesList = _context.Category.OrderBy(s => s.Name).Select(x => new { Id = x.Id, Value = x.Name });
+            var paymentMethodsList = _context.Card.OrderBy(s => s.Flag).Select(x => new { Id = x.Id, Value = x.Flag });
+
+            expense.AvailableCategories = new SelectList(categoriesList, "Id", "Value");
+            expense.AvailablePaymentMethods = new SelectList(paymentMethodsList, "Id", "Value");
+
             return View(expense);
         }
 
@@ -124,7 +130,7 @@ namespace Expenses_Manager.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return Redirect("/Receipts/Index");
             }
             return View(expense);
         }

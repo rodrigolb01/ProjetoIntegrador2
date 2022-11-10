@@ -30,11 +30,12 @@ namespace Expenses_Manager.Controllers
 
             foreach(Receipt receipt in receipts)
             {
-                var hasPedingPayments = _context.Expense.AnyAsync(e => e.Status == PaymentStatus.Pending);
-                receipt.PendingPayments = hasPedingPayments.Result;
+                var expensesList = _context.Expense.Where(e => e.ReceiptId == receipt.Id).ToListAsync();
 
-                var getExpenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).ToListAsync();
-                var totalExpensesValue = getExpenses.Result.Sum(e => e.Value);
+                var hasPedingPayments = expensesList.Result.Any(e => e.Status == PaymentStatus.Pending);
+                receipt.PendingPayments = hasPedingPayments;
+
+                var totalExpensesValue = expensesList.Result.Sum(e => e.Value);
                 receipt.TotalValue = Math.Round(totalExpensesValue, 2);
             }
 
@@ -58,14 +59,14 @@ namespace Expenses_Manager.Controllers
             }
             
 
-            var getExpenses = _context.Expense.Where(e => e.ReceiptId == id).ToListAsync();
-            receipt.Expenses = getExpenses.Result;
+            var expensesList = _context.Expense.Where(e => e.ReceiptId == id).ToListAsync();
+            receipt.Expenses = expensesList.Result;
 
-            var hasPedingPayments = _context.Expense.AnyAsync(e => e.Status == PaymentStatus.Pending);
-            receipt.PendingPayments = hasPedingPayments.Result;
+            var hasPedingPayments = expensesList.Result.Any(e => e.Status == PaymentStatus.Pending);
+            receipt.PendingPayments = hasPedingPayments;
 
 
-            var totalExpensesValue = getExpenses.Result.Sum(e => e.Value);
+            var totalExpensesValue = expensesList.Result.Sum(e => e.Value);
             receipt.TotalValue = Math.Round(totalExpensesValue, 2);
 
             return View(receipt);

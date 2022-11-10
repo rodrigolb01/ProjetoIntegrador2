@@ -77,6 +77,9 @@
                 <th></th>
             </tr>
         </thead>
+        <div>
+             <a asp-controller="Expenses" asp-action="Create">Add</a>
+        </div>
         <tbody>
             @foreach (var item in Model.Expenses)
             {
@@ -119,6 +122,5 @@
     </table>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>
 </div>
