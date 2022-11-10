@@ -12,7 +12,7 @@ namespace Expenses_Manager.Models
         public double TotalValue { get; set; } = 0;
         public bool PendingPayments { get; set; } = false;
         [NotMapped]
-        public SelectList? Expenses { get; set; }
+        public List<Expense> Expenses { get; set; } = new List<Expense>();
 
         public Receipt()
         {

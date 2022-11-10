@@ -41,6 +41,82 @@
             @Html.DisplayFor(model => model.PendingPayments)
         </dd>
     </dl>
+    <h3>
+        Expenses of this receipt:
+    </h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    UserId
+                </th>
+                <th>
+                    ReceiptId
+                </th>
+                <th>
+                    date
+                </th>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Value
+                </th>
+                <th>
+                    PaymentMethodId
+                </th>
+                <th>
+                    Status
+                </th>
+                <th>
+                    Installments
+                </th>
+                <th>
+                    CategoryId
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Expenses)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.UserId)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ReceiptId)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.date)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Value)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.PaymentMethodId)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Status)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Installments)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.CategoryId)
+                    </td>
+                    <td>
+                        <a asp-controller="Expenses" asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                        <a asp-controller="Expenses" asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                        <a asp-controller="Expenses" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |

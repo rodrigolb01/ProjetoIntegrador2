@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Expenses_Manager.Data;
 using Expenses_Manager.Models;
 using Microsoft.AspNetCore.Authorization;
+using Expenses_Manager.Models.enums;
+using System.Globalization;
 
 namespace Expenses_Manager.Controllers
 {
@@ -24,7 +26,19 @@ namespace Expenses_Manager.Controllers
         [Authorize]
         public async Task<IActionResult> Index()
         {
-              return View(await _context.Receipt.ToListAsync());
+            var receipts = await _context.Receipt.ToListAsync();
+
+            foreach(Receipt receipt in receipts)
+            {
+                var hasPedingPayments = _context.Expense.AnyAsync(e => e.Status == PaymentStatus.Pending);
+                receipt.PendingPayments = hasPedingPayments.Result;
+
+                var getExpenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).ToListAsync();
+                var totalExpensesValue = getExpenses.Result.Sum(e => e.Value);
+                receipt.TotalValue = Math.Round(totalExpensesValue, 2);
+            }
+
+            return View(receipts);
         }
 
         // GET: Receipts/Details/5
@@ -42,6 +56,17 @@ namespace Expenses_Manager.Controllers
             {
                 return NotFound();
             }
+            
+
+            var getExpenses = _context.Expense.Where(e => e.ReceiptId == id).ToListAsync();
+            receipt.Expenses = getExpenses.Result;
+
+            var hasPedingPayments = _context.Expense.AnyAsync(e => e.Status == PaymentStatus.Pending);
+            receipt.PendingPayments = hasPedingPayments.Result;
+
+
+            var totalExpensesValue = getExpenses.Result.Sum(e => e.Value);
+            receipt.TotalValue = Math.Round(totalExpensesValue, 2);
 
             return View(receipt);
         }
@@ -68,62 +93,6 @@ namespace Expenses_Manager.Controllers
 
                 _context.Add(receipt);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(receipt);
-        }
-
-        // GET: Receipts/Edit/5
-        [Authorize]
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null || _context.Receipt == null)
-            {
-                return NotFound();
-            }
-
-            var receipt = await _context.Receipt.FindAsync(id);
-            if (receipt == null)
-            {
-                return NotFound();
-            }
-            return View(receipt);
-        }
-
-        // POST: Receipts/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [Authorize]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,UserId,Month,Year,TotalValue,PendingPayments")] Receipt receipt)
-        {
-            if (id != receipt.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
-                    receipt.UserId = user.Id;
-
-                    _context.Update(receipt);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ReceiptExists(receipt.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
                 return RedirectToAction(nameof(Index));
             }
             return View(receipt);

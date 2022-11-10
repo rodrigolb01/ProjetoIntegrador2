@@ -20,13 +20,8 @@ namespace Expenses_Manager.Controllers
             _context = context;
         }
 
-        // GET: Expenses
-        public async Task<IActionResult> Index()
-        {
-              return View(await _context.Expense.ToListAsync());
-        }
-
         // GET: Expenses/Details/5
+        [Authorize]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null || _context.Expense == null)
@@ -45,6 +40,7 @@ namespace Expenses_Manager.Controllers
         }
 
         // GET: Expenses/Create
+        [Authorize]
         public IActionResult Create()
         {
             var categoriesList = _context.Category.OrderBy(s => s.Name).Select(x => new { Id = x.Id, Value = x.Name });
