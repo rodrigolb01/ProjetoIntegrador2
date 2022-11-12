@@ -20,11 +20,21 @@ namespace Expenses_Manager.Controllers
             _context = context;
         }
 
+        //Recupera o Id do usuario que esta logado
+        [Authorize]
+        public async Task<string> GetUserId()
+        {
+            var loggedUserName = User.Identity.Name;
+            var getUser = _context.Users.FirstOrDefaultAsync(x => x.UserName == loggedUserName);
+
+            return getUser.Result.Id;
+        }
+
         // GET: Cards
         [Authorize]
         public async Task<IActionResult> Index()
         {
-              return View(await _context.Card.ToListAsync());
+              return View(await _context.Card.Where(c => c.UserId == GetUserId().Result).ToListAsync());
         }
 
         // GET: Cards/Details/5
@@ -63,8 +73,7 @@ namespace Expenses_Manager.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
-                card.UserId = user.Result.Id;
+                card.UserId = GetUserId().Result;
 
                 _context.Add(card);
                 await _context.SaveChangesAsync();
@@ -87,6 +96,8 @@ namespace Expenses_Manager.Controllers
             {
                 return NotFound();
             }
+            card.UserId = GetUserId().Result;
+
             return View(card);
         }
 
@@ -107,9 +118,6 @@ namespace Expenses_Manager.Controllers
             {
                 try
                 {
-                    var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
-                    card.UserId = user.Id;
-
                     _context.Update(card);
                     await _context.SaveChangesAsync();
                 }

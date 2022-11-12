@@ -22,11 +22,21 @@ namespace Expenses_Manager.Controllers
             _context = context;
         }
 
+        //Recupera o Id do usuario que esta logado
+        [Authorize]
+        public async Task<string> GetUserId()
+        {
+            var loggedUserName = User.Identity.Name;
+            var getUser = _context.Users.FirstOrDefaultAsync(x => x.UserName == loggedUserName);
+
+            return getUser.Result.Id;
+        }
+
         // GET: Receipts
         [Authorize]
         public async Task<IActionResult> Index()
         {
-            var receipts = await _context.Receipt.ToListAsync();
+            var receipts = await _context.Receipt.Where(r => r.UserId == GetUserId().Result).ToListAsync();
 
             foreach(Receipt receipt in receipts)
             {
@@ -65,7 +75,6 @@ namespace Expenses_Manager.Controllers
             var hasPedingPayments = expensesList.Result.Any(e => e.Status == PaymentStatus.Pending);
             receipt.PendingPayments = hasPedingPayments;
 
-
             var totalExpensesValue = expensesList.Result.Sum(e => e.Value);
             receipt.TotalValue = Math.Round(totalExpensesValue, 2);
 
@@ -89,8 +98,7 @@ namespace Expenses_Manager.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
-                receipt.UserId = user.Result.Id;
+                receipt.UserId = GetUserId().Result;
 
                 _context.Add(receipt);
                 await _context.SaveChangesAsync();

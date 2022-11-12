@@ -20,11 +20,21 @@ namespace Expenses_Manager.Controllers
             _context = context;
         }
 
+        //Recupera o Id do usuario que esta logado
+        [Authorize]
+        public async Task<string> GetUserId()
+        {
+            var loggedUserName = User.Identity.Name;
+            var getUser = _context.Users.FirstOrDefaultAsync(x => x.UserName == loggedUserName);
+
+            return getUser.Result.Id;
+        }
+
         // GET: UserData
         [Authorize]
         public async Task<IActionResult> Index()
         {
-              return View(await _context.UserData.ToListAsync());
+              return View(await _context.UserData.Where(u => u.UserId == GetUserId().Result).ToListAsync());
         }
 
         // GET: UserData/Details/5
@@ -50,7 +60,6 @@ namespace Expenses_Manager.Controllers
         [Authorize]
         public IActionResult Create()
         {
-            //string userId = _context.Users.
             return View();
         }
 
@@ -64,8 +73,8 @@ namespace Expenses_Manager.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
-                userData.UserId = user.Result.Id;
+                userData.UserId = GetUserId().Result;
+
 
                 _context.Add(userData);
                 await _context.SaveChangesAsync();
@@ -88,6 +97,8 @@ namespace Expenses_Manager.Controllers
             {
                 return NotFound();
             }
+            userData.UserId = GetUserId().Result;
+
             return View(userData);
         }
 
@@ -108,9 +119,6 @@ namespace Expenses_Manager.Controllers
             {
                 try
                 {
-                    var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
-                    userData.UserId = user.Id;
-
                     _context.Update(userData);
                     await _context.SaveChangesAsync();
                 }

@@ -20,11 +20,21 @@ namespace Expenses_Manager.Controllers
             _context = context;
         }
 
+        //Recupera o Id do usuario que esta logado
+        [Authorize]
+        public async Task<string> GetUserId()
+        {
+            var loggedUserName = User.Identity.Name;
+            var getUser = _context.Users.FirstOrDefaultAsync(x => x.UserName == loggedUserName);
+
+            return getUser.Result.Id;
+        }
+
         // GET: Categories
         [Authorize]
         public async Task<IActionResult> Index()
         {
-              return View(await _context.Category.ToListAsync());
+              return View(await _context.Category.Where(x => x.UserId == GetUserId().Result).ToListAsync());
         }
 
         // GET: Categories/Details/5
@@ -59,10 +69,12 @@ namespace Expenses_Manager.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
+        public async Task<IActionResult> Create([Bind("Id,UserId,Name")] Category category)
         {
             if (ModelState.IsValid)
             {
+                category.UserId = GetUserId().Result;
+
                 _context.Add(category);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -84,6 +96,8 @@ namespace Expenses_Manager.Controllers
             {
                 return NotFound();
             }
+            category.UserId = GetUserId().Result;
+
             return View(category);
         }
 
@@ -93,7 +107,7 @@ namespace Expenses_Manager.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Category category)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,UserId,Name")] Category category)
         {
             if (id != category.Id)
             {

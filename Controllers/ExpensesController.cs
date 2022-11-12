@@ -20,6 +20,16 @@ namespace Expenses_Manager.Controllers
             _context = context;
         }
 
+        //Recupera o Id do usuario que esta logado
+        [Authorize]
+        public async Task<string> GetUserId()
+        {
+            var loggedUserName = User.Identity.Name;
+            var getUser = _context.Users.FirstOrDefaultAsync(x => x.UserName == loggedUserName);
+
+            return getUser.Result.Id;
+        }
+
         // GET: Expenses/Details/5
         [Authorize]
         public async Task<IActionResult> Details(int? id)
@@ -43,12 +53,15 @@ namespace Expenses_Manager.Controllers
         [Authorize]
         public IActionResult Create()
         {
-            var categoriesList = _context.Category.OrderBy(s => s.Name).Select(x => new { Id = x.Id, Value = x.Name });
-            var paymentMethodsList = _context.Card.OrderBy(s => s.Flag).Select(x => new { Id = x.Id, Value = x.Flag });
+            var categoriesList = _context.Category.OrderBy(s => s.Name).Select(x => new { Id = x.Id, Value = x.Name, UserId = x.UserId });
+            var paymentMethodsList = _context.Card.OrderBy(s => s.Flag).Select(x => new { Id = x.Id, Value = x.Flag, UserId = x.UserId });
+
+            var userCaregoriesList = categoriesList.Where(e => e.UserId == GetUserId().Result);
+            var userPaymentMethodsList = paymentMethodsList.Where(p => p.UserId == GetUserId().Result);
 
             Expense expenseModel = new Expense();
-            expenseModel.AvailableCategories = new SelectList(categoriesList, "Id", "Value");
-            expenseModel.AvailablePaymentMethods = new SelectList(paymentMethodsList, "Id", "Value");
+            expenseModel.AvailableCategories = new SelectList(userCaregoriesList, "Id", "Value");
+            expenseModel.AvailablePaymentMethods = new SelectList(userPaymentMethodsList, "Id", "Value");
 
             return View(expenseModel);
         }
@@ -63,8 +76,7 @@ namespace Expenses_Manager.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
-                expense.UserId = user.Result.Id;
+                expense.UserId = GetUserId().Result;
 
                 _context.Add(expense);
                 await _context.SaveChangesAsync();
@@ -87,11 +99,15 @@ namespace Expenses_Manager.Controllers
             {
                 return NotFound();
             }
-            var categoriesList = _context.Category.OrderBy(s => s.Name).Select(x => new { Id = x.Id, Value = x.Name });
-            var paymentMethodsList = _context.Card.OrderBy(s => s.Flag).Select(x => new { Id = x.Id, Value = x.Flag });
+            var categoriesList = _context.Category.OrderBy(s => s.Name).Select(x => new { Id = x.Id, Value = x.Name, UserId = x.UserId });
+            var paymentMethodsList = _context.Card.OrderBy(s => s.Flag).Select(x => new { Id = x.Id, Value = x.Flag, UserId = x.UserId });
+
+            var userCaregoriesList = categoriesList.Where(e => e.UserId == GetUserId().Result);
+            var userPaymentMethodsList = paymentMethodsList.Where(p => p.UserId == GetUserId().Result);
 
             expense.AvailableCategories = new SelectList(categoriesList, "Id", "Value");
-            expense.AvailablePaymentMethods = new SelectList(paymentMethodsList, "Id", "Value");
+            expense.AvailablePaymentMethods = new SelectList(userPaymentMethodsList, "Id", "Value");
+            expense.UserId = GetUserId().Result;
 
             return View(expense);
         }
@@ -113,9 +129,6 @@ namespace Expenses_Manager.Controllers
             {
                 try
                 {
-                    var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
-                    expense.UserId = user.Id;
-
                     _context.Update(expense);
                     await _context.SaveChangesAsync();
                 }
