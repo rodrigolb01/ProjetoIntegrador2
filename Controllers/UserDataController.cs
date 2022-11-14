@@ -75,7 +75,6 @@ namespace Expenses_Manager.Controllers
             {
                 userData.UserId = GetUserId().Result;
 
-
                 _context.Add(userData);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -119,6 +118,8 @@ namespace Expenses_Manager.Controllers
             {
                 try
                 {
+                    userData.UserId = GetUserId().Result;
+
                     _context.Update(userData);
                     await _context.SaveChangesAsync();
                 }

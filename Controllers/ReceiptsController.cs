@@ -78,7 +78,8 @@ namespace Expenses_Manager.Controllers
             var totalExpensesValue = expensesList.Result.Sum(e => e.Value);
             receipt.TotalValue = Math.Round(totalExpensesValue, 2);
 
-            TempData["currentExpenseId"] = id;
+            //salva a fatura sendo consultada atualmente para consulta das despezas
+            TempData["currentReceiptId"] = id;
 
             return View(receipt);
         }

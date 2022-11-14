@@ -118,6 +118,8 @@ namespace Expenses_Manager.Controllers
             {
                 try
                 {
+                    category.UserId = GetUserId().Result;
+
                     _context.Update(category);
                     await _context.SaveChangesAsync();
                 }

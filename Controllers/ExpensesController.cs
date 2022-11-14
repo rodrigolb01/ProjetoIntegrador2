@@ -20,6 +20,14 @@ namespace Expenses_Manager.Controllers
             _context = context;
         }
 
+        //Retorna para a fatura
+        [Authorize]
+        public async Task<IActionResult> BackToList()
+        {
+            int expenseId = (int)TempData["currentReceiptId"];
+            return Redirect("/Receipts/Details/" + expenseId);
+        }
+
         //Recupera o Id do usuario que esta logado
         [Authorize]
         public async Task<string> GetUserId()
@@ -76,12 +84,14 @@ namespace Expenses_Manager.Controllers
         {
             if (ModelState.IsValid)
             {
+                int expenseId = (int)TempData["currentReceiptId"];
+
                 expense.UserId = GetUserId().Result;
-                expense.ReceiptId = (int)TempData["currentExpenseId"];
+                expense.ReceiptId = expenseId;
 
                 _context.Add(expense);
                 await _context.SaveChangesAsync();
-                return Redirect("/Receipts/Index");
+                return Redirect("/Receipts/Details/"+expenseId);
             }
             return View(expense);
         }
@@ -106,7 +116,7 @@ namespace Expenses_Manager.Controllers
             var userCaregoriesList = categoriesList.Where(e => e.UserId == GetUserId().Result);
             var userPaymentMethodsList = paymentMethodsList.Where(p => p.UserId == GetUserId().Result);
 
-            expense.AvailableCategories = new SelectList(categoriesList, "Id", "Value");
+            expense.AvailableCategories = new SelectList(userCaregoriesList, "Id", "Value");
             expense.AvailablePaymentMethods = new SelectList(userPaymentMethodsList, "Id", "Value");
             expense.UserId = GetUserId().Result;
 
@@ -130,6 +140,9 @@ namespace Expenses_Manager.Controllers
             {
                 try
                 {
+                    expense.UserId = GetUserId().Result;
+                    expense.ReceiptId = (int)TempData["currentReceiptId"];
+
                     _context.Update(expense);
                     await _context.SaveChangesAsync();
                 }
@@ -144,7 +157,8 @@ namespace Expenses_Manager.Controllers
                         throw;
                     }
                 }
-                return Redirect("/Receipts/Index");
+                int expenseId = (int)TempData["currentReceiptId"];
+                return Redirect("/Receipts/Details/" + expenseId);
             }
             return View(expense);
         }
@@ -185,7 +199,9 @@ namespace Expenses_Manager.Controllers
             }
             
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            int expenseId = (int)TempData["currentReceiptId"];
+            return Redirect("/Receipts/Details/" + expenseId);
         }
 
         private bool ExpenseExists(int id)

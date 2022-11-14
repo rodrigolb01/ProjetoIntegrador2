@@ -30,7 +30,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="PaymentMethodId" class="control-label"></label>
-                <input asp-for="PaymentMethodId" class="form-control" />
+                <select asp-for="PaymentMethodId" asp-items=Model.AvailablePaymentMethods class="form-control"></select>
                 <span asp-validation-for="PaymentMethodId" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -56,7 +56,7 @@
 </div>
 
 <div>
-    <a asp-controller="Receipts" asp-action="Index">Back to List</a>
+    <a asp-action="BackToList">Back to List</a>
 </div>
 
 @section Scripts {

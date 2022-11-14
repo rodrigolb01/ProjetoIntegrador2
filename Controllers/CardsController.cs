@@ -69,7 +69,7 @@ namespace Expenses_Manager.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,UserId,HolderName,Flag,IsCredit,ExpirationDate,LimitValue,CurrentValue")] Card card)
+        public async Task<IActionResult> Create([Bind("Id,UserId,HolderName,Number,SecurityCode,Flag,IsCredit,ExpirationDate,LimitValue,CurrentValue")] Card card)
         {
             if (ModelState.IsValid)
             {
@@ -107,7 +107,7 @@ namespace Expenses_Manager.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,UserId,HolderName,Flag,IsCredit,ExpirationDate,LimitValue,CurrentValue")] Card card)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,UserId,HolderName,Number,SecurityCode,Flag,IsCredit,ExpirationDate,LimitValue,CurrentValue")] Card card)
         {
             if (id != card.Id)
             {
@@ -118,6 +118,8 @@ namespace Expenses_Manager.Controllers
             {
                 try
                 {
+                    card.UserId = GetUserId().Result;
+
                     _context.Update(card);
                     await _context.SaveChangesAsync();
                 }
