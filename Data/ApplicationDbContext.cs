@@ -15,5 +15,7 @@ namespace Expenses_Manager.Data
         public DbSet<Expenses_Manager.Models.Receipt> Receipt { get; set; }
         public DbSet<Expenses_Manager.Models.Card> Card { get; set; }
         public DbSet<Expenses_Manager.Models.Category> Category { get; set; }
+
+        public int currentReceiptId { get; set; }
     }
 }

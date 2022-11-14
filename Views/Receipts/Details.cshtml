@@ -10,9 +10,6 @@
     <h4>Receipt</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.UserId)
-        </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.UserId)
         </dd>
@@ -48,12 +45,6 @@
         <thead>
             <tr>
                 <th>
-                    UserId
-                </th>
-                <th>
-                    ReceiptId
-                </th>
-                <th>
                     date
                 </th>
                 <th>
@@ -84,12 +75,6 @@
             @foreach (var item in Model.Expenses)
             {
                 <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.UserId)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.ReceiptId)
-                    </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.date)
                     </td>

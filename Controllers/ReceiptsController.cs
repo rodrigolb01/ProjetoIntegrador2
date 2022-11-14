@@ -78,6 +78,8 @@ namespace Expenses_Manager.Controllers
             var totalExpensesValue = expensesList.Result.Sum(e => e.Value);
             receipt.TotalValue = Math.Round(totalExpensesValue, 2);
 
+            TempData["currentExpenseId"] = id;
+
             return View(receipt);
         }
 

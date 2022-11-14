@@ -77,6 +77,7 @@ namespace Expenses_Manager.Controllers
             if (ModelState.IsValid)
             {
                 expense.UserId = GetUserId().Result;
+                expense.ReceiptId = (int)TempData["currentExpenseId"];
 
                 _context.Add(expense);
                 await _context.SaveChangesAsync();
