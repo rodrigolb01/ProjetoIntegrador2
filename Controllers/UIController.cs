@@ -1,24 +1,34 @@
 ﻿using Expenses_Manager.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace Expenses_Manager.Controllers
 {
-    public class HomeController : Controller
+    public class UIController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly ILogger<UIController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        public UIController(ILogger<UIController> logger)
         {
             _logger = logger;
         }
 
+        //Autenticar ou cadastrar usuario
         public IActionResult Index()
         {
             return View();
         }
 
+        //Termos de uso
         public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        //Menu principal
+        [Authorize]
+        public IActionResult Home()
         {
             return View();
         }

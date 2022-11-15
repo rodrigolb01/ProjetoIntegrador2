@@ -47,7 +47,7 @@ namespace Expenses_Manager.Areas.Identity.Pages.Account
             // if success redirect to profile creation with Id
             if(StatusMessage == "Thank you for confirming your email.")
             {
-                Redirect("/UserData/Create");
+                Redirect("/UI/Index");
    
             }
             return Page();
