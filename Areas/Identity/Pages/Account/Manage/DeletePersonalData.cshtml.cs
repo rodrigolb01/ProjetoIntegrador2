@@ -5,9 +5,12 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
+using Expenses_Manager.Data;
+using Expenses_Manager.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Expenses_Manager.Areas.Identity.Pages.Account.Manage
@@ -17,6 +20,7 @@ namespace Expenses_Manager.Areas.Identity.Pages.Account.Manage
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogger<DeletePersonalDataModel> _logger;
+        private readonly ApplicationDbContext _context;
 
         public DeletePersonalDataModel(
             UserManager<IdentityUser> userManager,
@@ -26,34 +30,24 @@ namespace Expenses_Manager.Areas.Identity.Pages.Account.Manage
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
+
+            var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
+              .UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=aspnet-Expenses_Manager-4FDCB869-85CC-48D7-83C9-BB00B4BAFD6F;Trusted_Connection=True;MultipleActiveResultSets=true")
+              .EnableSensitiveDataLogging()
+              .Options;
+            _context = new ApplicationDbContext(contextOptions);
         }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [BindProperty]
         public InputModel Input { get; set; }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
+   
         public class InputModel
         {
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
             [Required]
             [DataType(DataType.Password)]
             public string Password { get; set; }
         }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public bool RequirePassword { get; set; }
 
         public async Task<IActionResult> OnGet()
@@ -86,7 +80,56 @@ namespace Expenses_Manager.Areas.Identity.Pages.Account.Manage
                 }
             }
 
-            //delete userData before or gets an error
+            //deletes address data
+            var userData = _context.UserData.AsNoTracking().FirstOrDefaultAsync(x => x.UserId == user.Id).Result;
+            if( userData != null)
+            {
+                _context.UserData.Remove(userData);
+                await _context.SaveChangesAsync();
+            }
+
+            //if user have any data left delete all and close account
+            List<Expense> userExpenses = _context.Expense.AsNoTracking().Where(x => x.UserId == user.Id).ToListAsync().Result;
+            if (userExpenses.Any() || userExpenses != null)
+            {
+                foreach (Expense expense in userExpenses)
+                {
+                    _context.Expense.Remove(expense);
+                }
+                await _context.SaveChangesAsync();
+            }
+
+            List<Category> userCategories = _context.Category.AsNoTracking().Where(x => x.UserId == user.Id).ToListAsync().Result;
+            if(userCategories.Any() || userCategories != null)
+            {
+                foreach (Category category in userCategories)
+                {
+                    _context.Category.Remove(category);
+                }
+                await _context.SaveChangesAsync();
+            }
+           
+
+            List<Receipt> userReceipts = _context.Receipt.AsNoTracking().Where(x => x.UserId == user.Id).ToListAsync().Result;
+            if(userReceipts.Any() || userReceipts != null)
+            {
+                foreach(Receipt receipt in userReceipts)
+                {
+                    _context.Receipt.Remove(receipt);
+                }
+                await _context.SaveChangesAsync();
+            }
+
+            List<Card> userCards = _context.Card.AsNoTracking().Where(x => x.UserId == user.Id).ToListAsync().Result;
+            if(userCards.Any() || userCards != null)
+            {
+                foreach(Card card in userCards)
+                {
+                    _context.Card.Remove(card);
+                }
+                await _context.SaveChangesAsync();
+            }
+
             var result = await _userManager.DeleteAsync(user);
             var userId = await _userManager.GetUserIdAsync(user);
             if (!result.Succeeded)

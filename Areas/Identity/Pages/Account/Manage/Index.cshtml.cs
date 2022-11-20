@@ -52,7 +52,6 @@ namespace Expenses_Manager.Areas.Identity.Pages.Account.Manage
             public string PhoneNumber { get; set; }
             [Display(Name = "Profile Picture Url")]
             public string ProfileUrl { get; set; }
-
         }
 
         //Recupera o Id do usuario que esta logado
@@ -70,14 +69,24 @@ namespace Expenses_Manager.Areas.Identity.Pages.Account.Manage
         public async Task<UserData> GetLoggedUserData()
         {
             var userData = await _context.UserData.AsNoTracking().FirstOrDefaultAsync(x => x.UserId == GetLoggedUserId().Result);
+            if(userData == null)
+                return null;
+            
             return userData;
         }
 
         private async Task LoadAsync(IdentityUser user)
         {
-            var userName = await _userManager.GetUserNameAsync(user);
-            var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
-            var profileUrl = GetLoggedUserData().Result.ProfilePicture;
+            string userName = await _userManager.GetUserNameAsync(user);
+            string phoneNumber = await _userManager.GetPhoneNumberAsync(user);
+            string defaultProfilePicUrl = "https://photogeeksteven.files.wordpress.com/2014/06/default-user-icon-profile.png";
+            string profileUrl;
+
+            var currentUserData = GetLoggedUserData().Result;
+            if (currentUserData != null)
+                profileUrl = currentUserData.ProfilePicture;
+            else
+                profileUrl = defaultProfilePicUrl;
 
             Username = userName;
 
@@ -127,23 +136,34 @@ namespace Expenses_Manager.Areas.Identity.Pages.Account.Manage
 
             var profileUserData = GetLoggedUserData().Result;
 
-            if (Input.ProfileUrl != profileUserData.ProfilePicture)
+            UserData userData = new UserData()
             {
-                UserData updatedUser = new UserData()
-                {
-                    Id = profileUserData.Id,
-                    UserId = profileUserData.UserId,
-                    Name = profileUserData.Name,
-                    State = profileUserData.State,
-                    City = profileUserData.City,
-                    AddressLine = profileUserData.AddressLine,
-                    ProfilePicture = Input.ProfileUrl
-                };
+                UserId = user.Id,
+                Name = user.Email,
+                State = "",
+                City = "",
+                AddressLine = "",
+                ProfilePicture = "https://photogeeksteven.files.wordpress.com/2014/06/default-user-icon-profile.png"
+            };
 
-                _context.Update(updatedUser);
-                await _context.SaveChangesAsync();
+            if (Input.ProfileUrl != String.Empty)
+                userData.ProfilePicture = Input.ProfileUrl;
 
+            if (profileUserData != null) // reuse data and update
+            {
+                userData.Id = profileUserData.Id;
+                userData.UserId = profileUserData.UserId;
+                userData.Name = profileUserData.Name;
+                userData.AddressLine = profileUserData.AddressLine;
+                userData.City = profileUserData.City;
+                userData.State = profileUserData.State;
+
+                _context.Update(userData);
             }
+            else // add new just for profile pocture
+                _context.Add(userData);
+
+            await _context.SaveChangesAsync();
 
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your profile has been updated";

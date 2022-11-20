@@ -1,0 +1,31 @@
+﻿@page
+@model AddressModel
+@{
+    ViewData["Title"] = "Manager Address Data";
+    ViewData["ActivePage"] = ManageNavPages.Address;
+}
+
+<h3>@ViewData["Title"]</h3>
+<partial name="_StatusMessage" for="StatusMessage" />
+<div class="row">
+    <div class="col-md-6">
+        <form id="address-form" method="post">
+            <div>
+                <label asp-for="Input.City" class="form-label"></label>
+                <input asp-for="Input.City" class="form-control" />
+                <span asp-validation-for="Input.City" class="text-danger"></span>
+            </div>
+            <div>
+                <label asp-for="Input.State" class="form-label"></label>
+                <input asp-for="Input.State" class="form-control" />
+                <span asp-validation-for="Input.State" class="text-danger"></span>
+            </div>
+            <div>
+                <label asp-for="Input.AddressLine" class="form-label"></label>
+                <input asp-for="Input.AddressLine" class="form-control" />
+                <span asp-validation-for="Input.AddressLine" class="text-danger"></span>
+            </div>
+            <button id="change-email-button" type="submit" asp-page-handler="ChangeAddress" class="w-100 btn btn-lg btn-primary">Update address</button>
+        </form>
+    </div>
+</div>
