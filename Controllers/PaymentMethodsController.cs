@@ -11,11 +11,11 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Expenses_Manager.Controllers
 {
-    public class CardsController : Controller
+    public class PaymentMethodsController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        public CardsController(ApplicationDbContext context)
+        public PaymentMethodsController(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -30,86 +30,86 @@ namespace Expenses_Manager.Controllers
             return getUser.Result.Id;
         }
 
-        // GET: Cards
+        // GET: PaymentMethods
         [Authorize]
         public async Task<IActionResult> Index()
         {
-              return View(await _context.Card.Where(c => c.UserId == GetUserId().Result).ToListAsync());
+              return View(await _context.PaymentMethod.Where(c => c.UserId == GetUserId().Result && c.Flag != "Cash").ToListAsync());
         }
 
-        // GET: Cards/Details/5
+        // GET: PaymentMethods/Details/5
         [Authorize]
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Card == null)
+            if (id == null || _context.PaymentMethod == null)
             {
                 return NotFound();
             }
 
-            var card = await _context.Card
+            var paymentMethod = await _context.PaymentMethod
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (card == null)
+            if (paymentMethod == null)
             {
                 return NotFound();
             }
 
-            return View(card);
+            return View(paymentMethod);
         }
 
-        // GET: Cards/Create
+        // GET: PaymentMethods/Create
         [Authorize]
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Cards/Create
+        // POST: PaymentMethods/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,UserId,HolderName,Number,SecurityCode,Flag,IsCredit,ExpirationDate,LimitValue,CurrentValue")] Card card)
+        public async Task<IActionResult> Create([Bind("Id,UserId,HolderName,Number,SecurityCode,Flag,Type,ReceiptClosingDay,LimitValue,CurrentValue")] PaymentMethod paymentMethod)
         {
             if (ModelState.IsValid)
             {
-                card.UserId = GetUserId().Result;
+                paymentMethod.UserId = GetUserId().Result;
 
-                _context.Add(card);
+                _context.Add(paymentMethod);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(card);
+            return View(paymentMethod);
         }
 
-        // GET: Cards/Edit/5
+        // GET: PaymentMethods/Edit/5
         [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Card == null)
+            if (id == null || _context.PaymentMethod == null)
             {
                 return NotFound();
             }
 
-            var card = await _context.Card.FindAsync(id);
-            if (card == null)
+            var paymentMethod = await _context.PaymentMethod.FindAsync(id);
+            if (paymentMethod == null)
             {
                 return NotFound();
             }
-            card.UserId = GetUserId().Result;
+            paymentMethod.UserId = GetUserId().Result;
 
-            return View(card);
+            return View(paymentMethod);
         }
 
-        // POST: Cards/Edit/5
+        // POST: PaymentMethods/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,UserId,HolderName,Number,SecurityCode,Flag,IsCredit,ExpirationDate,LimitValue,CurrentValue")] Card card)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,UserId,HolderName,Number,SecurityCode,Flag,Type,ReceiptClosingDay,LimitValue,CurrentValue")] PaymentMethod paymentMethod)
         {
-            if (id != card.Id)
+            if (id != paymentMethod.Id)
             {
                 return NotFound();
             }
@@ -118,14 +118,14 @@ namespace Expenses_Manager.Controllers
             {
                 try
                 {
-                    card.UserId = GetUserId().Result;
+                    paymentMethod.UserId = GetUserId().Result;
 
-                    _context.Update(card);
+                    _context.Update(paymentMethod);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CardExists(card.Id))
+                    if (!PaymentMethodExist(paymentMethod.Id))
                     {
                         return NotFound();
                     }
@@ -136,51 +136,51 @@ namespace Expenses_Manager.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(card);
+            return View(paymentMethod);
         }
 
-        // GET: Cards/Delete/5
+        // GET: PaymentMethods/Delete/5
         [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Card == null)
+            if (id == null || _context.PaymentMethod == null)
             {
                 return NotFound();
             }
 
-            var card = await _context.Card
+            var paymentMethod = await _context.PaymentMethod
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (card == null)
+            if (paymentMethod == null)
             {
                 return NotFound();
             }
 
-            return View(card);
+            return View(paymentMethod);
         }
 
-        // POST: Cards/Delete/5
+        // POST: PaymentMethods/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Card == null)
+            if (_context.PaymentMethod == null)
             {
-                return Problem("Entity set 'ApplicationDbContext.Card'  is null.");
+                return Problem("Entity set 'ApplicationDbContext.PaymentMethod'  is null.");
             }
-            var card = await _context.Card.FindAsync(id);
-            if (card != null)
+            var paymentMethod = await _context.PaymentMethod.FindAsync(id);
+            if (paymentMethod != null)
             {
-                _context.Card.Remove(card);
+                _context.PaymentMethod.Remove(paymentMethod);
             }
             
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool CardExists(int id)
+        private bool PaymentMethodExist(int id)
         {
-          return _context.Card.Any(e => e.Id == id);
+          return _context.PaymentMethod.Any(e => e.Id == id);
         }
     }
 }

@@ -120,12 +120,12 @@ namespace Expenses_Manager.Areas.Identity.Pages.Account.Manage
                 await _context.SaveChangesAsync();
             }
 
-            List<Card> userCards = _context.Card.AsNoTracking().Where(x => x.UserId == user.Id).ToListAsync().Result;
+            List<PaymentMethod> userCards = _context.PaymentMethod.AsNoTracking().Where(x => x.UserId == user.Id).ToListAsync().Result;
             if(userCards.Any() || userCards != null)
             {
-                foreach(Card card in userCards)
+                foreach(PaymentMethod card in userCards)
                 {
-                    _context.Card.Remove(card);
+                    _context.PaymentMethod.Remove(card);
                 }
                 await _context.SaveChangesAsync();
             }

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Expenses_Manager.Models.Card>
+﻿@model IEnumerable<Expenses_Manager.Models.PaymentMethod>
 
 @{
     ViewData["Title"] = "Index";
@@ -22,13 +22,10 @@
                 @Html.DisplayNameFor(model => model.Flag)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.SecurityCode)
+                @Html.DisplayNameFor(model => model.Type)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.IsCredit)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ExpirationDate)
+                @Html.DisplayNameFor(model => model.ReceiptClosingDay)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.LimitValue)
@@ -52,19 +49,30 @@
                 @Html.DisplayFor(modelItem => item.Flag)
             </td>
             <td>
-                ***
+                @Html.DisplayFor(modelItem => item.Type)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.IsCredit)
+                @Html.DisplayFor(modelItem => item.ReceiptClosingDay.Day)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.ExpirationDate)
+                @if(item.Type == Expenses_Manager.Models.Enums.PaymentType.Debit)
+                {
+                        <span>Receita do mes </span>
+                }
+                else
+                {
+                    @Html.DisplayFor(modelItem => item.LimitValue)
+                }
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.LimitValue)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CurrentValue)
+                @if(item.Type == Expenses_Manager.Models.Enums.PaymentType.Debit)
+                {
+                    <span> - </span>
+                }
+                else
+                {
+                    @Html.DisplayFor(modelItem => item.CurrentValue)
+                }
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

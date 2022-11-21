@@ -62,7 +62,7 @@ namespace Expenses_Manager.Controllers
         public IActionResult Create()
         {
             var categoriesList = _context.Category.OrderBy(s => s.Name).Select(x => new { Id = x.Id, Value = x.Name, UserId = x.UserId });
-            var paymentMethodsList = _context.Card.OrderBy(s => s.Flag).Select(x => new { Id = x.Id, Value = x.Flag, UserId = x.UserId });
+            var paymentMethodsList = _context.PaymentMethod.OrderBy(s => s.Flag).Select(x => new { Id = x.Id, Value = x.Flag, UserId = x.UserId });
 
             var userCaregoriesList = categoriesList.Where(e => e.UserId == GetUserId().Result);
             var userPaymentMethodsList = paymentMethodsList.Where(p => p.UserId == GetUserId().Result);
@@ -111,7 +111,7 @@ namespace Expenses_Manager.Controllers
                 return NotFound();
             }
             var categoriesList = _context.Category.OrderBy(s => s.Name).Select(x => new { Id = x.Id, Value = x.Name, UserId = x.UserId });
-            var paymentMethodsList = _context.Card.OrderBy(s => s.Flag).Select(x => new { Id = x.Id, Value = x.Flag, UserId = x.UserId });
+            var paymentMethodsList = _context.PaymentMethod.OrderBy(s => s.Flag).Select(x => new { Id = x.Id, Value = x.Flag, UserId = x.UserId });
 
             var userCaregoriesList = categoriesList.Where(e => e.UserId == GetUserId().Result);
             var userPaymentMethodsList = paymentMethodsList.Where(p => p.UserId == GetUserId().Result);

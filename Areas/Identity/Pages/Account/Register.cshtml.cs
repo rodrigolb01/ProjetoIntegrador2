@@ -10,6 +10,8 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
+using Expenses_Manager.Data;
+using Expenses_Manager.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -17,6 +19,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Expenses_Manager.Areas.Identity.Pages.Account
@@ -30,6 +33,7 @@ namespace Expenses_Manager.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly ApplicationDbContext _context;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
@@ -45,6 +49,13 @@ namespace Expenses_Manager.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+
+            var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
+               .UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=aspnet-Expenses_Manager-4FDCB869-85CC-48D7-83C9-BB00B4BAFD6F;Trusted_Connection=True;MultipleActiveResultSets=true")
+               .EnableSensitiveDataLogging()
+               .Options;
+
+            _context = new ApplicationDbContext(contextOptions);
         }
 
         [BindProperty]
@@ -103,6 +114,20 @@ namespace Expenses_Manager.Areas.Identity.Pages.Account
                         pageHandler: null,
                         values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);
+
+                    //insert cash payment method
+                    PaymentMethod allowCashPayment = new PaymentMethod()
+                    {
+                        UserId = userId,
+                        Flag = "Cash",
+                        Type = Models.Enums.PaymentType.Cash,
+                        ReceiptClosingDay = DateTime.Now,
+                        CurrentValue = 0
+                    };
+
+                    _context.Add(allowCashPayment);
+                    await _context.SaveChangesAsync();
+
 
                     await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
                         $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
