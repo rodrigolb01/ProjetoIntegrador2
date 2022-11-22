@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Expenses_Manager.Models.Enums;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Expenses_Manager.Models
@@ -13,6 +15,18 @@ namespace Expenses_Manager.Models
         public bool PendingPayments { get; set; } = false;
         [NotMapped]
         public List<Expense> Expenses { get; set; } = new List<Expense>();
+        [NotMapped]
+        [DisplayName("Order")]
+        public OrderType OrderType { get; set; } = OrderType.ByDay;
+        [NotMapped]
+        [DisplayName("Filter")]
+        public FilterType FilterType { get; set; } = FilterType.None;
+        [NotMapped]
+        [DisplayName("Value")]
+        public string? FilterValue { get; set; }
+        [NotMapped]
+        [DisplayName("Ordening")]
+        public Query? Query { get; set; }
 
         public Receipt()
         {

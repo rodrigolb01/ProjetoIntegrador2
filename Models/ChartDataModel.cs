@@ -2,7 +2,7 @@
 
 namespace Expenses_Manager.Models
 {
-    public class HomeChartData
+    public class ChartDataModel
     {
         public List<LineData>? data { get; set; }
     }

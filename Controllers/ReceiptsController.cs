@@ -10,6 +10,8 @@ using Expenses_Manager.Models;
 using Microsoft.AspNetCore.Authorization;
 using Expenses_Manager.Models.enums;
 using System.Globalization;
+using Expenses_Manager.Models.Enums;
+using Syncfusion.EJ2.Linq;
 
 namespace Expenses_Manager.Controllers
 {
@@ -47,6 +49,69 @@ namespace Expenses_Manager.Controllers
             }
 
             return View(receipts);
+        }
+
+        // Reordenar resultados
+        [Authorize]
+        public async Task<IActionResult> OrdenedDetails([Bind("Id,UserId,Month,Year,TotalValue,PendingPayments,Expenses,OrderType,FilterType,FilterValue,Query")] Receipt receipt)
+        {
+            List<Expense> expenses = new List<Expense>();
+            receipt.Id = (int)TempData["currentReceiptId"];
+
+            if (ModelState.IsValid)
+            {
+                switch(receipt.OrderType)
+                {
+                    case OrderType.ById:
+                        {
+                            if(receipt.Query == Query.Descending)
+                                expenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.Id).OrderByDescending(x => x.ReceiptId).ToListAsync().Result;
+                            else
+                                expenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.Id).ToListAsync().Result;
+                        }
+                        break;
+                    case OrderType.ByDay:
+                        {
+                            if(receipt.Query == Query.Descending)
+                                expenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.date.Day).OrderByDescending(x => x.date.Day).ToListAsync().Result;
+                            else
+                                expenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.date.Day).ToListAsync().Result;
+                        }
+                        break;
+                    case OrderType.ByValue:
+                        {
+                            if(receipt.Query == Query.Descending)
+                                expenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.Value).OrderByDescending(x => x.Value).ToListAsync().Result;
+                            else
+                                expenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.Value).ToListAsync().Result;
+                        }
+                        break;
+                    default: expenses = _context.Expense.OrderBy(x => x.date.Day).Where(e => e.ReceiptId == receipt.Id).ToListAsync().Result; break;
+                }
+
+
+                if(receipt.FilterType != FilterType.None)
+                {
+                    switch (receipt.FilterType)
+                    {
+                        case FilterType.ByDay: expenses = expenses.Where(x => x.date.Day == Convert.ToInt32(receipt.FilterValue)).ToList(); break;
+                        case FilterType.ByValue: expenses = expenses.Where(x => x.Value == Convert.ToDouble(receipt.FilterValue)).ToList(); break;
+                        case FilterType.ByStatus: expenses = expenses.Where(x => x.Status.ToString() == receipt.FilterValue).ToList(); break;
+                        case FilterType.ByPaymentMethod: expenses = expenses.Where(x => x.PaymentMethodId == Convert.ToInt32(receipt.FilterValue)).ToList(); break;
+                    }
+                }      
+
+                receipt.Expenses = expenses;
+
+                var hasPedingPayments = expenses.Any(e => e.Status == PaymentStatus.Pending);
+                receipt.PendingPayments = hasPedingPayments;
+
+                //salva a fatura sendo consultada atualmente para consulta das despezas
+                TempData["currentReceiptId"] = receipt.Id;
+
+                return View(receipt);
+            }
+            return View();
         }
 
         // GET: Receipts/Details/5
