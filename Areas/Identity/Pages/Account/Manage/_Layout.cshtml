@@ -1,4 +1,9 @@
-﻿@{
+﻿<head>
+    <link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/20.3.56/material.css" />
+    <script src="https://cdn.syncfusion.com/ej2/20.3.56/dist/ej2.min.js"></script>
+</head>
+@{
+    
     if (ViewData.TryGetValue("ParentLayout", out var parentLayout))
     {
         Layout = (string)parentLayout;
@@ -27,3 +32,4 @@
 @section Scripts {
     @RenderSection("Scripts", required: false)
 }
+    @Html.EJS().ScriptManager()

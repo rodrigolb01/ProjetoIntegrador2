@@ -115,7 +115,7 @@ namespace Expenses_Manager.Areas.Identity.Pages.Account
                         values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);
 
-                    //insert cash payment method
+                    //insert default  payment method for cash
                     PaymentMethod allowCashPayment = new PaymentMethod()
                     {
                         UserId = userId,

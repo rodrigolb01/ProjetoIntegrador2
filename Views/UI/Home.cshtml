@@ -1,4 +1,6 @@
-﻿@{
+﻿@model IEnumerable<Expenses_Manager.Models.Util.LineData>
+
+@{
     ViewData["Title"] = "Home";
 }
 
@@ -22,6 +24,27 @@
                     <partial name="_LoginPartial" />
                 </li>
             </ul>
+            <div>
+                <ejs-chart id="container" title="expenses - month">
+                    <e-chart-primaryxaxis 
+                    valueType="DateTime" 
+                    intervalType=Months
+                    labelFormat="m"
+                    edgeLabelPlacement=Shift>
+                    </e-chart-primaryxaxis>
+
+                    <e-series-collection>
+                         <e-series 
+                         dataSource=@Model
+                         name="Total expenses per month" 
+                         xName="xValue"
+                         width="2"
+                         opacity="1"
+                         yName="yValue"
+                         type="@Syncfusion.EJ2.Charts.ChartSeriesType.Line"></e-series>
+                    </e-series-collection>
+                </ejs-chart>
+            </div>
         </div>
     </div>
 </body>

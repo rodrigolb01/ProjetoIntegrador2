@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Expenses_Manager.Data;
 using Expenses_Manager.Models;
 using Microsoft.AspNetCore.Authorization;
+using Expenses_Manager.Models.Enums;
 
 namespace Expenses_Manager.Controllers
 {
@@ -62,7 +63,7 @@ namespace Expenses_Manager.Controllers
         public IActionResult Create()
         {
             var categoriesList = _context.Category.OrderBy(s => s.Name).Select(x => new { Id = x.Id, Value = x.Name, UserId = x.UserId });
-            var paymentMethodsList = _context.PaymentMethod.OrderBy(s => s.Flag).Select(x => new { Id = x.Id, Value = x.Flag, UserId = x.UserId });
+            var paymentMethodsList = _context.PaymentMethod.OrderBy(s => s.Flag).Select(x => new {Id = x.Id, Value = x.Type != PaymentType.Cash ? x.Flag + " terminado em " + x.Number.Substring(x.Number.Length - 2) : x.Flag, UserId = x.UserId});
 
             var userCaregoriesList = categoriesList.Where(e => e.UserId == GetUserId().Result);
             var userPaymentMethodsList = paymentMethodsList.Where(p => p.UserId == GetUserId().Result);
@@ -90,6 +91,13 @@ namespace Expenses_Manager.Controllers
                 expense.ReceiptId = expenseId;
 
                 _context.Add(expense);
+
+                //update total cost of receipt
+                Receipt thisReceipt = _context.Receipt.FirstOrDefaultAsync(x => x.Id == expense.ReceiptId).Result;
+                thisReceipt.TotalValue += expense.Value;
+
+                _context.Update(thisReceipt);
+
                 await _context.SaveChangesAsync();
                 return Redirect("/Receipts/Details/"+expenseId);
             }
@@ -145,6 +153,21 @@ namespace Expenses_Manager.Controllers
 
                     _context.Update(expense);
                     await _context.SaveChangesAsync();
+
+                    //update total value of the receipt
+                    Receipt thisReceipt = _context.Receipt.FirstOrDefaultAsync(x => x.Id == expense.ReceiptId).Result;
+                    List<Expense> thisReceiptExpenses = _context.Expense.Where(x => x.ReceiptId == thisReceipt.Id).ToListAsync().Result;
+
+                    double totalValue = 0;
+                    foreach (Expense e in thisReceiptExpenses)
+                    {
+                        totalValue += e.Value;
+                    }
+
+                    thisReceipt.TotalValue = totalValue;
+
+                    _context.Update(thisReceipt);
+                    await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -195,9 +218,15 @@ namespace Expenses_Manager.Controllers
             var expense = await _context.Expense.FindAsync(id);
             if (expense != null)
             {
+                //update total value of the receipt
+                Receipt thisReceipt = _context.Receipt.FirstOrDefaultAsync(x => x.Id == expense.ReceiptId).Result;
+                thisReceipt.TotalValue = thisReceipt.TotalValue - expense.Value;
+
+                _context.Update(thisReceipt);
+
                 _context.Expense.Remove(expense);
-            }
-            
+            }          
+
             await _context.SaveChangesAsync();
 
             int expenseId = (int)TempData["currentReceiptId"];
