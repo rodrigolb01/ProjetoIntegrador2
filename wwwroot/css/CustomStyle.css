@@ -1,0 +1,49 @@
+﻿btn {
+    width: 80px;
+}
+
+btn-form-end {
+    margin-top: 10px; 
+    margin-bottom: 10px
+}
+
+.loginForm {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 500px;
+}
+
+.loginContainer {
+    max-width: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loginContainer-helperText-lg {
+    color: white;
+    text-shadow: 2px 0 blue, -2px 0 blue, 0 2px blue, 0 -2px blue, 1px 1px blue, -1px -1px blue, 1px -1px blue, -1px 1px blue;
+}
+
+.loginContainer-helperText {
+    color: white;
+    text-shadow: 1px 0 blue, -1px 0 blue, 0 1px blue, 0 -1px blue, 0.5px 0.5px blue, -0.5px -0.5px blue, 0.5px -0.5px blue, -0.5px 0.5px blue;
+}
+
+.loginForm div {
+
+}
+
+.main {
+    margin-top: 60px;
+    background-image: url('../img/splash1-2.png');
+}
+
+.ui-index-btn1 {
+    border-radius: 0;
+    margin: 10px;
+    width: 150px !important;
+    background-color: lightgray;
+    box-shadow: 0 3px 10px black;
+}

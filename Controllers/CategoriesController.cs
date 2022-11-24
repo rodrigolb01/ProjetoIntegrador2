@@ -20,6 +20,14 @@ namespace Expenses_Manager.Controllers
             _context = context;
         }
 
+        //Retorna para a fatura
+        [Authorize]
+        public async Task<IActionResult> BackToList()
+        {
+            int expenseId = (int)TempData["currentReceiptId"];
+            return Redirect("/Receipts/Details/" + expenseId);
+        }
+
         //Recupera o Id do usuario que esta logado
         [Authorize]
         public async Task<string> GetUserId()

@@ -7,22 +7,22 @@
 <h1>Index</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create">Adicionar</a>
 </p>
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Month)
+                Mês
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Year)
+                Ano
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.TotalValue)
+                Total da fatura
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.PendingPayments)
+                Pagamentos pendentes
             </th>
             <th></th>
         </tr>
@@ -43,10 +43,13 @@
                 @Html.DisplayFor(modelItem => item.PendingPayments)
             </td>
             <td>
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-action="Details" asp-route-id="@item.Id">Detalhes</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Remover</a>
             </td>
         </tr>
 }
     </tbody>
 </table>
+<div>
+    <a asp-controller="UI" asp-action="Home">Voltar</a>
+</div>

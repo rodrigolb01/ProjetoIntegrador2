@@ -7,31 +7,31 @@
 <h1>Index</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create">Adicionar</a>
 </p>
 <table class="table">
     <thead>
         <tr>           
             <th>
-                @Html.DisplayNameFor(model => model.HolderName)
+                Usuário
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Number)
+                Número
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Flag)
+                Bandeira
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Type)
+                Tipo
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.ReceiptClosingDay)
+                Fechamento
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.LimitValue)
+                Limite
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.CurrentValue)
+                Valor atual
             </th>
             <th></th>
         </tr>
@@ -57,7 +57,7 @@
             <td>
                 @if(item.Type == Expenses_Manager.Models.Enums.PaymentType.Debit)
                 {
-                        <span>Receita do mes </span>
+                        <span>Receita do mes</span>
                 }
                 else
                 {
@@ -75,11 +75,14 @@
                 }
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-action="Edit" asp-route-id="@item.Id">Editar</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Detalhes</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Remover</a>
             </td>
         </tr>
 }
     </tbody>
 </table>
+<div>
+    <a asp-controller="UI" asp-action="Home">Voltar</a>
+</div>

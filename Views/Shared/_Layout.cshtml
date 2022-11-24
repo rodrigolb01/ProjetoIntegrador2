@@ -34,13 +34,24 @@
         </nav>
     </header>
     }
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    @if (!SignInManager.IsSignedIn(User))
+    {
+        <div class="container-login">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+    }
+    else
+    {
+        <div class="container">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+    }
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer text-muted" style="background-color: white">
         <div class="container">
             &copy; 2022 - Expenses_Manager - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>

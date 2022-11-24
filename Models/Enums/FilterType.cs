@@ -1,4 +1,6 @@
-﻿namespace Expenses_Manager.Models.Enums
+﻿using System.ComponentModel;
+
+namespace Expenses_Manager.Models.Enums
 {
     public enum FilterType
     {
