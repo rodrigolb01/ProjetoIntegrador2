@@ -124,10 +124,20 @@ namespace Expenses_Manager.Areas.Identity.Pages.Account
                         ReceiptClosingDay = DateTime.Now,
                         CurrentValue = 0
                     };
-
                     _context.Add(allowCashPayment);
-                    await _context.SaveChangesAsync();
 
+                    //create userData
+                    UserData userData = new UserData()
+                    {
+                        UserId = userId,
+                        Name = "",
+                        State = "",
+                        City = "",
+                        AddressLine = "",
+                        ProfilePicture = "https://photogeeksteven.files.wordpress.com/2014/06/default-user-icon-profile.png"
+                    };
+                    _context.Add(userData);
+                    await _context.SaveChangesAsync();
 
                     await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
                         $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");

@@ -83,44 +83,17 @@ namespace Expenses_Manager.Areas.Identity.Pages.Account.Manage
                 return Page();
             }
 
-            UserData userData = new UserData()
-            {
-                UserId = user.Id,
-                Name = user.Email,
-                State = "",
-                City = "",
-                AddressLine = "",
-                ProfilePicture = ""
-            };
+            var currentUserData = _context.UserData.AsNoTracking().FirstOrDefaultAsync(x => x.UserId == user.Id).Result;
 
-            var currentUserData = _context.UserData.AsNoTracking().FirstOrDefaultAsync(x => x.UserId == user.Id).Result;         
+            currentUserData.City = Input.City;
+            currentUserData.State = Input.State;
+            currentUserData.AddressLine = Input.AddressLine;
 
-            if (currentUserData != null) // if already existing data then reuse it
-            {
-                userData.Id = currentUserData.Id;
-
-                if (currentUserData.City != null || currentUserData.City != string.Empty)
-                    userData.City = currentUserData.City;
-                if (currentUserData.State != null || currentUserData.State != string.Empty)
-                    userData.State = currentUserData.State;
-                if (currentUserData.AddressLine != null || currentUserData.AddressLine != string.Empty)
-                    userData.AddressLine = currentUserData.AddressLine;
-                if (currentUserData.ProfilePicture != null || currentUserData.ProfilePicture != string.Empty)
-                    userData.ProfilePicture = currentUserData.ProfilePicture;
-            }
-
-            userData.City = Input.City;
-            userData.State = Input.State;
-            userData.AddressLine = Input.AddressLine;
-
-            if(currentUserData == null)
-                _context.Add(userData);
-            else
-                _context.Update(userData);
+            _context.Update(currentUserData);
 
             await _context.SaveChangesAsync();
 
-            StatusMessage = "Address data updated successfuly";
+            StatusMessage = "Endereço atualizado";
 
             return Page();
         }
