@@ -2,8 +2,7 @@
 {
     public enum OrderType
     {
-        ById,
-        ByDay,
-        ByValue
+        Dia,
+        Valor
     }
 }

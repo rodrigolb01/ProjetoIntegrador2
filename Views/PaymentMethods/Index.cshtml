@@ -1,10 +1,10 @@
 ﻿@model IEnumerable<Expenses_Manager.Models.PaymentMethod>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Métodos de pagamento";
 }
 
-<h1>Index</h1>
+<h1>Métodos de pagamento</h1>
 
 <p>
     <a asp-action="Create">Adicionar</a>
@@ -55,7 +55,7 @@
                 @Html.DisplayFor(modelItem => item.ReceiptClosingDay.Day)
             </td>
             <td>
-                @if(item.Type == Expenses_Manager.Models.Enums.PaymentType.Debit)
+                @if(item.Type == Expenses_Manager.Models.Enums.PaymentType.Debito)
                 {
                         <span>Receita do mes</span>
                 }
@@ -65,7 +65,7 @@
                 }
             </td>
             <td>
-                @if(item.Type == Expenses_Manager.Models.Enums.PaymentType.Debit)
+                @if(item.Type == Expenses_Manager.Models.Enums.PaymentType.Debito)
                 {
                     <span> - </span>
                 }

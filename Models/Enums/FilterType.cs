@@ -4,10 +4,10 @@ namespace Expenses_Manager.Models.Enums
 {
     public enum FilterType
     {
-        None,
-        ByDay,
-        ByValue,
-        ByPaymentMethod,
-        ByStatus
+        Nada,
+        Dia,
+        Valor,
+        Pagamento,
+        Status
     }
 }

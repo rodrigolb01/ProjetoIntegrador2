@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Expenses_Manager.Data;
 using Expenses_Manager.Models;
 using Microsoft.AspNetCore.Authorization;
 using Expenses_Manager.Models.enums;
-using System.Globalization;
 using Expenses_Manager.Models.Enums;
 using Syncfusion.EJ2.Linq;
 
@@ -44,7 +38,7 @@ namespace Expenses_Manager.Controllers
             {
                 var expensesList = _context.Expense.Where(e => e.ReceiptId == receipt.Id).ToListAsync();
 
-                var hasPedingPayments = expensesList.Result.Any(e => e.Status == PaymentStatus.Pending);
+                var hasPedingPayments = expensesList.Result.Any(e => e.Status == PaymentStatus.Pendente);
                 receipt.PendingPayments = hasPedingPayments;
             }
 
@@ -62,25 +56,17 @@ namespace Expenses_Manager.Controllers
             {
                 switch(receipt.OrderType)
                 {
-                    case OrderType.ById:
+                    case OrderType.Dia:
                         {
-                            if(receipt.Query == Query.Descending)
-                                expenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.Id).OrderByDescending(x => x.ReceiptId).ToListAsync().Result;
-                            else
-                                expenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.Id).ToListAsync().Result;
-                        }
-                        break;
-                    case OrderType.ByDay:
-                        {
-                            if(receipt.Query == Query.Descending)
+                            if(receipt.Query == Query.Descendente)
                                 expenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.date.Day).OrderByDescending(x => x.date.Day).ToListAsync().Result;
                             else
                                 expenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.date.Day).ToListAsync().Result;
                         }
                         break;
-                    case OrderType.ByValue:
+                    case OrderType.Valor:
                         {
-                            if(receipt.Query == Query.Descending)
+                            if(receipt.Query == Query.Descendente)
                                 expenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.Value).OrderByDescending(x => x.Value).ToListAsync().Result;
                             else
                                 expenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.Value).ToListAsync().Result;
@@ -90,20 +76,20 @@ namespace Expenses_Manager.Controllers
                 }
 
 
-                if(receipt.FilterType != FilterType.None)
+                if(receipt.FilterType != FilterType.Nada)
                 {
                     switch (receipt.FilterType)
                     {
-                        case FilterType.ByDay: expenses = expenses.Where(x => x.date.Day == Convert.ToInt32(receipt.FilterValue)).ToList(); break;
-                        case FilterType.ByValue: expenses = expenses.Where(x => x.Value == Convert.ToDouble(receipt.FilterValue)).ToList(); break;
-                        case FilterType.ByStatus: expenses = expenses.Where(x => x.Status.ToString() == receipt.FilterValue).ToList(); break;
-                        case FilterType.ByPaymentMethod: expenses = expenses.Where(x => x.PaymentMethodId == Convert.ToInt32(receipt.FilterValue)).ToList(); break;
+                        case FilterType.Dia: expenses = expenses.Where(x => x.date.Day == Convert.ToInt32(receipt.FilterValue)).ToList(); break;
+                        case FilterType.Valor: expenses = expenses.Where(x => x.Value == Convert.ToDouble(receipt.FilterValue)).ToList(); break;
+                        case FilterType.Status: expenses = expenses.Where(x => x.Status.ToString() == receipt.FilterValue).ToList(); break;
+                        case FilterType.Pagamento: expenses = expenses.Where(x => x.PaymentMethodId == Convert.ToInt32(receipt.FilterValue)).ToList(); break;
                     }
                 }      
 
                 receipt.Expenses = expenses;
 
-                var hasPedingPayments = expenses.Any(e => e.Status == PaymentStatus.Pending);
+                var hasPedingPayments = expenses.Any(e => e.Status == PaymentStatus.Pendente);
                 receipt.PendingPayments = hasPedingPayments;
 
                 //salva a fatura sendo consultada atualmente para consulta das despezas
@@ -130,11 +116,23 @@ namespace Expenses_Manager.Controllers
                 return NotFound();
             }
             
+            List<Expense> expensesList = _context.Expense.Where(e => e.ReceiptId == id).ToListAsync().Result;
+            foreach(Expense e in expensesList)
+            {
+                var p = _context.PaymentMethod.FirstOrDefaultAsync(x => x.Id == e.PaymentMethodId).Result;
+                string namePay = p.Type.ToString();
 
-            var expensesList = _context.Expense.Where(e => e.ReceiptId == id).ToListAsync();
-            receipt.Expenses = expensesList.Result;
+                if (p.Type != PaymentType.Dinheiro)
+                    namePay = p.Type.ToString() + " " + p.Flag + " terminado em " + p.Number.Substring(p.Number.Length - 2);
 
-            var hasPedingPayments = expensesList.Result.Any(e => e.Status == PaymentStatus.Pending);
+                e.PaymentMethodName = namePay;
+
+                var c = _context.Category.FirstOrDefaultAsync(x => x.Id == e.CategoryId).Result;
+                e.CategoryName = c.Name;
+            }
+            receipt.Expenses = expensesList;
+
+            var hasPedingPayments = expensesList.Any(e => e.Status == PaymentStatus.Pendente);
             receipt.PendingPayments = hasPedingPayments;
 
             //salva a fatura sendo consultada atualmente para consulta das despezas
@@ -201,6 +199,15 @@ namespace Expenses_Manager.Controllers
             var receipt = await _context.Receipt.FindAsync(id);
             if (receipt != null)
             {
+                List<Expense> expensesList = _context.Expense.Where(x => x.ReceiptId == id).ToListAsync().Result;
+                if(expensesList != null)
+                {
+                    foreach (Expense e in expensesList)
+                    {
+                        _context.Remove(e);
+                    }
+                }
+
                 _context.Receipt.Remove(receipt);
             }
             

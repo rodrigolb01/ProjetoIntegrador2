@@ -119,8 +119,8 @@ namespace Expenses_Manager.Areas.Identity.Pages.Account
                     PaymentMethod allowCashPayment = new PaymentMethod()
                     {
                         UserId = userId,
-                        Flag = "Cash",
-                        Type = Models.Enums.PaymentType.Cash,
+                        Flag = "Dinheiro",
+                        Type = Models.Enums.PaymentType.Dinheiro,
                         ReceiptClosingDay = DateTime.Now,
                         CurrentValue = 0
                     };

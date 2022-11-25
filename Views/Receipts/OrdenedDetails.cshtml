@@ -2,13 +2,13 @@
 @model Expenses_Manager.Models.Receipt
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Detalhes";
 }
 
-<h1>Details</h1>
+<h1>Detalhes</h1>
 
 <div>
-    <h4>Receipt</h4>
+    <h4>Fatura</h4>
     <hr />
     <dl class="row">
         <dt class="col-sm-2">
@@ -37,38 +37,38 @@
         </dd>
     </dl>
     <h3>
-        Expenses of this receipt:
+        Despezas desta receita
     </h3>
     <table class="table">
         <thead>
             <tr>
                 <th>
-                    date
+                    Data
                 </th>
                 <th>
-                    Name
+                    Descrição
                 </th>
                 <th>
-                    Value
+                    Valor
                 </th>
                 <th>
-                    PaymentMethodId
+                    Método de pagamento
                 </th>
                 <th>
                     Status
                 </th>
                 <th>
-                    Installments
+                    Parcelas
                 </th>
                 <th>
-                    CategoryId
+                    Categoria
                 </th>
                 <th></th>
             </tr>
         </thead>
         <div class="row">
             <div class="nav-item">
-                <a asp-controller="Expenses" asp-action="Create">Fazer Lancamento</a>
+                <a asp-controller="Expenses" asp-action="Create">Fazer Lançamento</a>
             </div>
             <div class="nav-item">
                 <a asp-area="" asp-controller="Categories" asp-action="Index">Categorias</a>
@@ -100,9 +100,9 @@
                         @Html.DisplayFor(modelItem => item.CategoryId)
                     </td>
                     <td>
-                        <a asp-controller="Expenses" asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                        <a asp-controller="Expenses" asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                        <a asp-controller="Expenses" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                        <a asp-controller="Expenses" asp-action="Edit" asp-route-id="@item.Id">Editar</a> |
+                        <a asp-controller="Expenses" asp-action="Details" asp-route-id="@item.Id">Detalhes</a> |
+                        <a asp-controller="Expenses" asp-action="Delete" asp-route-id="@item.Id">Remover</a>
                     </td>
                 </tr>
             }
@@ -137,5 +137,5 @@
     </div>
 </div>
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index">Voltar</a>
 </div>

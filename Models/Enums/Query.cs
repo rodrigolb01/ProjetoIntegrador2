@@ -2,7 +2,7 @@
 {
     public enum Query
     {
-        Ascending,
-        Descending
+        Ascendente,
+        Descendente
     }
 }

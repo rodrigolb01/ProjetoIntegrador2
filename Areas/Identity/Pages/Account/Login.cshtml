@@ -18,12 +18,12 @@
                     <hr />
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <div>
-                        <label asp-for="Input.Email" class="form-label loginContainer-helperText"></label>
+                        <label class="form-label loginContainer-helperText">Email</label>
                         <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" />
                         <span asp-validation-for="Input.Email" class="text-danger"></span>
                     </div>
                     <div>
-                        <label asp-for="Input.Password" class="form-label loginContainer-helperText"></label>
+                        <label class="form-label loginContainer-helperText">Senha</label>
                         <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" />
                         <span asp-validation-for="Input.Password" class="text-danger"></span>
                     </div>
@@ -36,11 +36,11 @@
                         </div>
                     </div>
                     <div>
-                        <button id="login-submit" type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+                        <button id="login-submit" type="submit" class="w-100 btn btn-lg btn-primary">Entrar</button>
                     </div>
                     <div>
                         <p>
-                            <a id="forgot-password" class="loginContainer-helperText" asp-page="./ForgotPassword">Forgot my password</a>
+                            <a id="forgot-password" class="loginContainer-helperText" asp-page="./ForgotPassword">Esqueci minha senha</a>
                         </p>
                     </div>
                 </form>

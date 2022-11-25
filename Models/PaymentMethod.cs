@@ -1,5 +1,7 @@
 ﻿using Expenses_Manager.Models.Enums;
+using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Expenses_Manager.Models
 {
@@ -16,13 +18,16 @@ namespace Expenses_Manager.Models
         [DisplayName("Bandeira")]
         public string? Flag { get; set; } = "";
         [DisplayName("Tipo")]
-        public PaymentType Type { get; set; } = PaymentType.Credit;
+        public PaymentType Type { get; set; } = PaymentType.Credito;
         [DisplayName("Fechamento da fatura")]
         public DateTime ReceiptClosingDay { get; set; } = DateTime.Now;
         [DisplayName("Limite")]
         public double? LimitValue { get; set; } = 0;
         [DisplayName("Valor atual")]
         public double CurrentValue { get; set; } = 0;
+        [NotMapped]
+        [TempData]
+        public string? StatusMessage { get; set; }
 
         public PaymentMethod()
         {

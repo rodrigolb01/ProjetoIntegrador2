@@ -2,8 +2,8 @@
 {
     public enum PaymentType
     {
-        Credit,
-        Debit,
-        Cash
+        Credito,
+        Debito,
+        Dinheiro
     }
 }

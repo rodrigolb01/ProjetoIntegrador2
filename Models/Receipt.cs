@@ -20,16 +20,16 @@ namespace Expenses_Manager.Models
         [NotMapped]
         public List<Expense> Expenses { get; set; } = new List<Expense>();
         [NotMapped]
-        [DisplayName("Order")]
-        public OrderType OrderType { get; set; } = OrderType.ByDay;
+        [DisplayName("Ordenar por")]
+        public OrderType OrderType { get; set; } = OrderType.Dia;
         [NotMapped]
-        [DisplayName("Filter")]
-        public FilterType FilterType { get; set; } = FilterType.None;
+        [DisplayName("Filtrar por")]
+        public FilterType FilterType { get; set; } = FilterType.Nada;
         [NotMapped]
-        [DisplayName("Value")]
+        [DisplayName("Valor do filtro")]
         public string? FilterValue { get; set; }
         [NotMapped]
-        [DisplayName("Ordening")]
+        [DisplayName("Em ordem")]
         public Query? Query { get; set; }
 
         public Receipt()

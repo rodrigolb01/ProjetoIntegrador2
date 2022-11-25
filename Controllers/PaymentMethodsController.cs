@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Expenses_Manager.Data;
 using Expenses_Manager.Models;
@@ -34,7 +29,7 @@ namespace Expenses_Manager.Controllers
         [Authorize]
         public async Task<IActionResult> Index()
         {
-              return View(await _context.PaymentMethod.Where(c => c.UserId == GetUserId().Result && c.Flag != "Cash").ToListAsync());
+              return View(await _context.PaymentMethod.Where(c => c.UserId == GetUserId().Result && c.Flag != "Dinheiro").ToListAsync());
         }
 
         // GET: PaymentMethods/Details/5
@@ -171,6 +166,12 @@ namespace Expenses_Manager.Controllers
             var paymentMethod = await _context.PaymentMethod.FindAsync(id);
             if (paymentMethod != null)
             {
+                if(_context.Expense.Any(x => x.PaymentMethodId == id))
+                {
+                    paymentMethod.StatusMessage = "Ainda há despezas vinculadas a esse método de pagamento";
+                    return View(paymentMethod);
+                }
+
                 _context.PaymentMethod.Remove(paymentMethod);
             }
             
