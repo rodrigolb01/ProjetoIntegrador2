@@ -5,6 +5,7 @@ using Expenses_Manager.Data;
 using Expenses_Manager.Models;
 using Microsoft.AspNetCore.Authorization;
 using Expenses_Manager.Models.Enums;
+using Expenses_Manager.Models.enums;
 
 namespace Expenses_Manager.Controllers
 {
@@ -81,11 +82,11 @@ namespace Expenses_Manager.Controllers
         {
             if (ModelState.IsValid)
             {
-                var categoriesList = _context.Category.OrderBy(s => s.Name).Select(x => new { Id = x.Id, Value = x.Name, UserId = x.UserId });
-                var paymentMethodsList = _context.PaymentMethod.OrderBy(s => s.Flag).Select(x => new { Id = x.Id, Value = x.Type != PaymentType.Dinheiro ? x.Type.ToString() + " " + x.Flag + " terminado em " + x.Number.Substring(x.Number.Length - 2) : x.Flag, UserId = x.UserId });
+                var getCategories = _context.Category.OrderBy(s => s.Name).Select(x => new { Id = x.Id, Value = x.Name, UserId = x.UserId });
+                var getPaymentMethods = _context.PaymentMethod.OrderBy(s => s.Flag).Select(x => new { Id = x.Id, Value = x.Type != PaymentType.Dinheiro ? x.Type.ToString() + " " + x.Flag + " terminado em " + x.Number.Substring(x.Number.Length - 2) : x.Flag, UserId = x.UserId });
 
-                var userCaregoriesList = categoriesList.Where(e => e.UserId == GetUserId().Result);
-                var userPaymentMethodsList = paymentMethodsList.Where(p => p.UserId == GetUserId().Result);
+                var userCaregoriesList = getCategories.Where(e => e.UserId == GetUserId().Result);
+                var userPaymentMethodsList = getPaymentMethods.Where(p => p.UserId == GetUserId().Result);
 
                 expense.AvailableCategories = new SelectList(userCaregoriesList, "Id", "Value");
                 expense.AvailablePaymentMethods = new SelectList(userPaymentMethodsList, "Id", "Value");
@@ -93,28 +94,29 @@ namespace Expenses_Manager.Controllers
                 int currentReceiptId = (int)TempData["currentReceiptId"];
                 //salva id da receita atual para futuras operacoes
                 TempData["currentReceiptId"] = currentReceiptId;
+
                 Receipt currentReceipt = _context.Receipt.FirstOrDefaultAsync(x => x.Id == currentReceiptId).Result;
                 PaymentMethod currentPaymentMethod = _context.PaymentMethod.FirstOrDefaultAsync(x => x.Id == expense.PaymentMethodId).Result;
-                bool receiptClosed = expense.date > currentPaymentMethod.ReceiptClosingDay;
+                bool isReceiptClosed = expense.date > currentPaymentMethod.ReceiptClosingDay;
 
                 //Em caso de: data > fechamento da receita
                 //Aviso: Esta receita ja esta fechada, lancar na receita do proximo mes
-                if (receiptClosed)
+                if (isReceiptClosed)
                 {
-                    expense.StatusMessage = "Fatura fechada para o método de pagamento escolhido. Despeza deve ser lançada na fatura do próximo mês";
+                    expense.StatusMessage = "Fatura fechada para o método de pagamento escolhido. Despeza deve ser lançada na fatura do próximo mês!";
                     return View(expense);
                 }
 
                 //Se a data do pagamento for diferente do mes em questao:
                 //Aviso: usuario deve lancar despeza na fatura do mes correspondente
-                if (expense.date.Month != currentReceipt.Month && receiptClosed == false)
+                if (expense.date.Month != currentReceipt.Month && isReceiptClosed == false)
                 {
-                    expense.StatusMessage = "Despeza deve ser lançada na fatura do mês correspondente";
+                    expense.StatusMessage = "Despeza deve ser lançada na fatura do mês correspondente!";
                     return View(expense);
                 }
 
                 //Em caso de: compra.valor > (cartao.limite - cartao.valorAtual)
-                //Aviso: Saldo insuficiente
+                //Aviso: Saldo insuficiente, escolher outro metodo de pagamento
                 if (currentPaymentMethod.Type == PaymentType.Credito)
                 {
                     if (expense.Value > currentPaymentMethod.LimitValue - currentPaymentMethod.CurrentValue)
@@ -126,20 +128,104 @@ namespace Expenses_Manager.Controllers
                         currentPaymentMethod.CurrentValue += expense.Value;
                 }
 
-                expense.UserId = GetUserId().Result;
-                expense.ReceiptId = currentReceiptId;
-                expense.CategoryName = _context.Category.FirstOrDefaultAsync(x => x.Id == expense.CategoryId).Result.Name;
-                expense.PaymentMethodName = "id: " + currentPaymentMethod.Id + " " +  currentPaymentMethod.Type.ToString() + " " + currentPaymentMethod.Flag + " terminado em " + currentPaymentMethod.Number.Substring(currentPaymentMethod.Number.Length - 2);
+                //Em caso de: parcelas > 1 && pagamento em credito
+                //Para cada parcela, verificar se ha uma fatura em aberto para o proximo mes, se nao criar novas faturas ate cobrir as parcelas
+                if(expense.Installments > 1 && currentPaymentMethod.Type == PaymentType.Credito)
+                {
+                    int currentMonth = expense.date.Month;
+                    int currentYear = expense.date.Year;
+                    int finalMonth = 0;
+                    int finalYear = 0;
 
-                _context.Add(expense);
+                    if(((int)currentMonth + expense.Installments) > 12)
+                    {
+                        finalMonth = (int)(currentMonth + expense.Installments);
+                        finalMonth = finalMonth - 12;
 
-                //update total cost of receipt
-                Receipt thisReceipt = _context.Receipt.FirstOrDefaultAsync(x => x.Id == expense.ReceiptId).Result;
-                thisReceipt.TotalValue += expense.Value;
+                        finalYear = currentYear + 1;
+                    }
+                    else
+                    {
+                        finalMonth = (int)(currentMonth + expense.Installments);
+                        finalYear = currentYear;
+                    }
 
-                _context.Update(thisReceipt);
+                    DateTime currentDate = new DateTime(currentYear, currentMonth, expense.date.Day, DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second);
+                    DateTime finalDate = new DateTime(finalYear, finalMonth, expense.date.Day, DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second);
+                    
+                    while(currentDate <= finalDate)
+                    {
+                        Expense installment = new Expense()
+                        {
+                            UserId = GetUserId().Result,
+                            ReceiptId = 0,
+                            Name = expense.Name,
+                            date = currentDate,
+                            Value = Math.Round((double)(expense.Value / expense.Installments), 2),
+                            PaymentMethodId = expense.PaymentMethodId,
+                            PaymentMethodName = "id: " + currentPaymentMethod.Id + " " + currentPaymentMethod.Type.ToString() + " " + currentPaymentMethod.Flag + " terminado em " + currentPaymentMethod.Number.Substring(currentPaymentMethod.Number.Length - 2),
+                            Status = PaymentStatus.Pendente,
+                            Installments = expense.Installments,
+                            CategoryId = expense.CategoryId,
+                            CategoryName = _context.Category.FirstOrDefaultAsync(x => x.Id == expense.CategoryId).Result.Name,
+                    };
+                        string userId = GetUserId().Result;
+                        Receipt receipt = _context.Receipt.Where(x => x.UserId == userId).FirstOrDefaultAsync(x => x.Month == currentDate.Month).Result;
+                        if (receipt != null) 
+                            installment.ReceiptId = receipt.Id;
+                        else
+                        {
+                            Receipt newReceipt = new Receipt()
+                            {
+                                UserId = GetUserId().Result,
+                                Month = currentDate.Month,
+                                Year = currentDate.Year,
+                                TotalValue = installment.Value,
+                                PendingPayments = true
+                            };
 
-                await _context.SaveChangesAsync();
+                            _context.Receipt.Add(newReceipt);
+                            await _context.SaveChangesAsync();
+
+                            int newReceiptId = _context.Receipt.Where(x => x.UserId == userId).FirstOrDefaultAsync(x => x.Month == currentDate.Month).Result.Id;
+
+                            installment.ReceiptId = newReceiptId;
+                        }
+
+                        _context.Add(installment);
+                        await _context.SaveChangesAsync();
+
+                        int nextMonth = currentDate.Month + 1;
+
+                        if(nextMonth > 12)
+                        {
+                            nextMonth = nextMonth - 12;
+
+                            currentDate = new DateTime(currentDate.Year + 1, nextMonth, expense.date.Day, DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second);
+                        }
+                        else
+                        {
+                            currentDate = new DateTime(currentDate.Year, nextMonth, expense.date.Day, DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second);
+                        }
+                    }
+                }
+                else
+                {
+                    expense.UserId = GetUserId().Result;
+                    expense.ReceiptId = currentReceiptId;
+                    expense.CategoryName = _context.Category.FirstOrDefaultAsync(x => x.Id == expense.CategoryId).Result.Name;
+                    expense.PaymentMethodName = "id: " + currentPaymentMethod.Id + " " + currentPaymentMethod.Type.ToString() + " " + currentPaymentMethod.Flag + " terminado em " + currentPaymentMethod.Number.Substring(currentPaymentMethod.Number.Length - 2);
+
+                    _context.Add(expense);
+
+                    //update total cost of receipt
+                    Receipt thisReceipt = _context.Receipt.FirstOrDefaultAsync(x => x.Id == expense.ReceiptId).Result;
+                    thisReceipt.TotalValue += expense.Value;
+
+                    _context.Update(thisReceipt);
+
+                    await _context.SaveChangesAsync();
+                } 
                 return Redirect("/Receipts/Details/"+currentReceiptId);
             }
             return View(expense);
