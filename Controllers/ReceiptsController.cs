@@ -47,7 +47,7 @@ namespace Expenses_Manager.Controllers
 
         // Reordenar resultados
         [Authorize]
-        public async Task<IActionResult> OrdenedDetails([Bind("Id,UserId,Month,Year,TotalValue,PendingPayments,Expenses,OrderType,FilterType,FilterValue,Query")] Receipt receipt)
+        public async Task<IActionResult> OrdenedDetails([Bind("Id,Date,UserId,Month,Year,TotalValue,PendingPayments,Expenses,OrderType,FilterType,FilterValue,Query")] Receipt receipt)
         {
             List<Expense> expenses = new List<Expense>();
             receipt.Id = (int)TempData["currentReceiptId"];
@@ -119,16 +119,16 @@ namespace Expenses_Manager.Controllers
             List<Expense> expensesList = _context.Expense.Where(e => e.ReceiptId == id).ToListAsync().Result;
             foreach(Expense e in expensesList)
             {
-                var p = _context.PaymentMethod.FirstOrDefaultAsync(x => x.Id == e.PaymentMethodId).Result;
-                string namePay = p.Type.ToString();
+                var currentPaymentMethod = _context.PaymentMethod.FirstOrDefaultAsync(x => x.Id == e.PaymentMethodId).Result;
+                string currentPaymentMethodName = currentPaymentMethod.Type.ToString();
 
-                if (p.Type != PaymentType.Dinheiro)
-                    namePay = p.Type.ToString() + " " + p.Flag + " terminado em " + p.Number.Substring(p.Number.Length - 2);
+                if (currentPaymentMethod.Type != PaymentType.Dinheiro)
+                    currentPaymentMethodName = currentPaymentMethod.Type.ToString() + " " + currentPaymentMethod.Flag + " terminado em " + currentPaymentMethod.Number.Substring(currentPaymentMethod.Number.Length - 2);
 
-                e.PaymentMethodName = namePay;
+                e.PaymentMethodName = currentPaymentMethodName;
 
-                var c = _context.Category.FirstOrDefaultAsync(x => x.Id == e.CategoryId).Result;
-                e.CategoryName = c.Name;
+                var currentCategory = _context.Category.FirstOrDefaultAsync(x => x.Id == e.CategoryId).Result;
+                e.CategoryName = currentCategory.Name;
             }
             receipt.Expenses = expensesList;
 
@@ -154,11 +154,12 @@ namespace Expenses_Manager.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> Create([Bind("Id,UserId,Month,Year,TotalValue,PendingPayments")] Receipt receipt)
+        public async Task<IActionResult> Create([Bind("Id,Date,UserId,Month,Year,TotalValue,PendingPayments")] Receipt receipt)
         {
             if (ModelState.IsValid)
             {
                 receipt.UserId = GetUserId().Result;
+                receipt.Date = new DateTime(receipt.Year, receipt.Month, 1);//melhorar isso depois
 
                 _context.Add(receipt);
                 await _context.SaveChangesAsync();
@@ -204,6 +205,15 @@ namespace Expenses_Manager.Controllers
                 {
                     foreach (Expense e in expensesList)
                     {
+                        //extornar do cartao
+                        var expensePaymentMethod = _context.PaymentMethod.FirstOrDefaultAsync(x => x.Id == e.PaymentMethodId).Result;
+                        expensePaymentMethod.CurrentValue = Math.Round(expensePaymentMethod.CurrentValue - e.Value, 2);
+
+                        if (expensePaymentMethod.CurrentValue < 0) // caso haja algum erro de calculo (melhorar depois)
+                            expensePaymentMethod.CurrentValue = 0;
+
+                        _context.Update(expensePaymentMethod);
+
                         _context.Remove(e);
                     }
                 }

@@ -47,11 +47,11 @@ namespace Expenses_Manager.Controllers
         public async Task <IActionResult> Home()
         {
             var lineData = await _context.Receipt
-                .OrderBy(x => x.Month)
+                .OrderBy(x => x.Date)
                 .Where(x => x.UserId == GetUserId().Result)
                 .Select(x => new LineData 
                 { 
-                    xValue = new DateTime(x.Year, x.Month, 01), 
+                    xValue = new DateTime(x.Year, x.Month, 1), 
                     yValue = x.TotalValue
                 })
                 .ToListAsync();

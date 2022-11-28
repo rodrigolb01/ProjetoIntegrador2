@@ -8,6 +8,7 @@ namespace Expenses_Manager.Models
     public class Receipt
     {
         public int Id { get; set; }
+        public DateTime? Date {get;set;}
         public string UserId { get; set; } = "";
         [DisplayName("Mês")]
         public int Month { get; set; } = DateTime.Now.Month;
