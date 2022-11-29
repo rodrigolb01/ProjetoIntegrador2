@@ -2,7 +2,7 @@
 
 namespace Expenses_Manager.Models.Enums
 {
-    public enum FilterType
+    public enum ExpenseFilterType
     {
         Nada,
         Dia,

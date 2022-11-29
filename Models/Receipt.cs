@@ -22,17 +22,17 @@ namespace Expenses_Manager.Models
         public List<Expense> Expenses { get; set; } = new List<Expense>();
         [NotMapped]
         [DisplayName("Ordenar por")]
-        public OrderType OrderType { get; set; } = OrderType.Dia;
+        public ExpenseOrderType ExpensesOrderType { get; set; } = ExpenseOrderType.Dia;
         [NotMapped]
         [DisplayName("Filtrar por")]
-        public FilterType FilterType { get; set; } = FilterType.Nada;
+        public ExpenseFilterType ExpensesFilterType { get; set; } = ExpenseFilterType.Nada;
         [NotMapped]
         [DisplayName("Valor do filtro")]
-        public string? FilterValue { get; set; }
+        public string? ExpensesFilterValue { get; set; }
         [NotMapped]
         [DisplayName("Em ordem")]
-        public Query? Query { get; set; }
-
+        public ResultsOrder? ExpensesOrder { get; set; }
+        
         public Receipt()
         {
 

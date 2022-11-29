@@ -12,7 +12,7 @@
 </p>
 <table class="table">
     <thead>
-        <tr>           
+        <tr>
             <th>
                 Usuário
             </th>
@@ -38,50 +38,51 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.PaymentMethods) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.HolderName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Number)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Flag)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Type)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ReceiptClosingDay.Day)
-            </td>
-            <td>
-                @if(item.Type == Expenses_Manager.Models.Enums.PaymentType.Debito)
-                {
+        @foreach (var item in Model.PaymentMethods)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.HolderName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Number)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Flag)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Type)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ReceiptClosingDay.Day)
+                </td>
+                <td>
+                    @if (item.Type == Expenses_Manager.Models.Enums.PaymentType.Debito)
+                    {
                         <span>Receita do mes</span>
-                }
-                else
-                {
-                    @Html.DisplayFor(modelItem => item.LimitValue)
-                }
-            </td>
-            <td>
-                @if(item.Type == Expenses_Manager.Models.Enums.PaymentType.Debito)
-                {
-                    <span> - </span>
-                }
-                else
-                {
-                    @Html.DisplayFor(modelItem => item.CurrentValue)
-                }
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Editar</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Detalhes</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Remover</a>
-            </td>
-        </tr>
-}
+                    }
+                    else
+                    {
+                        @Html.DisplayFor(modelItem => item.LimitValue)
+                    }
+                </td>
+                <td>
+                    @if (item.Type == Expenses_Manager.Models.Enums.PaymentType.Debito)
+                    {
+                        <span> - </span>
+                    }
+                    else
+                    {
+                        @Html.DisplayFor(modelItem => item.CurrentValue)
+                    }
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Editar</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Detalhes</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Remover</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
 <div>

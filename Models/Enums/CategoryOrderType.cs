@@ -1,8 +1,7 @@
 ﻿namespace Expenses_Manager.Models.Enums
 {
-    public enum OrderType
+    public enum CategoryOrderType
     {
-        Dia,
-        Valor
+        OrdemAlfabetica
     }
 }

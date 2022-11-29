@@ -112,16 +112,16 @@
         <form asp-action="OrdenedDetails" class="col-1">
             <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                 <div class="nav-item">
-                    <label asp-for="OrderType" class="control-label"></label>
-                    <select asp-items="@Html.GetEnumSelectList<OrderType>()" asp-for="OrderType"></select>
+                    <label asp-for="ExpensesOrderType" class="control-label"></label>
+                    <select asp-items="@Html.GetEnumSelectList<ExpenseOrderType>()" asp-for="ExpensesOrderType"></select>
                 </div>
                 <div class="nav-item">
-                    <label asp-for="FilterType" class="control-label"></label>
-                    <select asp-items="@Html.GetEnumSelectList<FilterType>()" asp-for="FilterType"></select>
+                    <label asp-for="ExpensesFilterType" class="control-label"></label>
+                    <select asp-items="@Html.GetEnumSelectList<ExpenseFilterType>()" asp-for="ExpensesFilterType"></select>
                 </div>
                 <div class="nav-item">
-                    <label asp-for="Query" class="control-label"></label>
-                    <select asp-items="@Html.GetEnumSelectList<Query>()" asp-for="Query"></select>
+                    <label asp-for="ExpensesOrder" class="control-label"></label>
+                    <select asp-items="@Html.GetEnumSelectList<ResultsOrder>()" asp-for="ExpensesOrder"></select>
                 </div>
                 <div class="nav-item">
                     <input type="submit" value="Ordenar" class="btn btn-primary" />
@@ -129,8 +129,8 @@
             </div>
             <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                 <div class="form-group">
-                    <label asp-for="FilterValue" class="control-label"></label>
-                    <input asp-for="FilterValue" type="text" />
+                    <label asp-for="ExpensesFilterValue" class="control-label"></label>
+                    <input asp-for="ExpensesFilterValue" type="text" />
                 </div>
             </div>
         </form>

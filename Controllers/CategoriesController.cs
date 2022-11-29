@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using Expenses_Manager.Data;
 using Expenses_Manager.Models;
 using Microsoft.AspNetCore.Authorization;
+using Expenses_Manager.Models.Util;
+using Expenses_Manager.Models.Enums;
+using Syncfusion.EJ2.Linq;
 
 namespace Expenses_Manager.Controllers
 {
@@ -38,11 +41,38 @@ namespace Expenses_Manager.Controllers
             return getUser.Result.Id;
         }
 
+        // Ordenar resultados
+        [Authorize]
+        public async Task<IActionResult> OrdenedIndex([Bind("Categories,CategoriesOrderType,CategoriesFilterType,CategoriesFilterValue,CategoriesOrder")] CategoriesQuery category)
+        {
+            if (ModelState.IsValid)
+            {
+                List<Category> getCategories = await _context.Category.Where(x => x.UserId == GetUserId().Result).ToListAsync();
+
+                if(category.CategoriesOrder == ResultsOrder.Descendente)
+                    getCategories = getCategories.OrderBy(x => x.Name).OrderByDescending(x => x.Name).ToList();
+                else
+                    getCategories = getCategories.OrderBy(x => x.Name).ToList();
+
+                if (category.CategoriesFilterValue != String.Empty && category.CategoriesFilterValue != null)
+                    getCategories = getCategories.Where(x => x.Name == category.CategoriesFilterValue).ToList();
+
+                category.Categories = getCategories;
+                return View(category);
+            }
+            else
+                return View();
+        }
+
         // GET: Categories
         [Authorize]
         public async Task<IActionResult> Index()
         {
-              return View(await _context.Category.Where(x => x.UserId == GetUserId().Result).ToListAsync());
+            List<Category> getCategories = await _context.Category.Where(x => x.UserId == GetUserId().Result).ToListAsync();
+            CategoriesQuery categoriesQuery = new CategoriesQuery();
+            categoriesQuery.Categories = getCategories;
+
+            return View(categoriesQuery);
         }
 
         // GET: Categories/Details/5

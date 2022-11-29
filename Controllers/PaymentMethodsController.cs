@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Expenses_Manager.Data;
 using Expenses_Manager.Models;
 using Microsoft.AspNetCore.Authorization;
+using Expenses_Manager.Models.Util;
+using Expenses_Manager.Models.Enums;
+using Syncfusion.EJ2.Linq;
 
 namespace Expenses_Manager.Controllers
 {
@@ -25,11 +28,63 @@ namespace Expenses_Manager.Controllers
             return getUser.Result.Id;
         }
 
+        // Ordenar resultados
+        [Authorize]
+        public async Task<IActionResult> OrdenedIndex([Bind("PaymentMethods,PaymentMethodsOrderType,PaymentMethodsFilterType,PaymentMethodsFilterValue,PaymentMethodsOrder")] PaymentMethodsQuery paymentMethod)
+        {
+            if(ModelState.IsValid)
+            {
+                List<PaymentMethod> getPaymentMethods = await _context.PaymentMethod.Where(x => x.UserId == GetUserId().Result).ToListAsync();
+
+                if(paymentMethod.PaymentMethodsOrderType == PaymentMethodOrderType.ValorLimite)
+                {
+                    if (paymentMethod.PaymentMethodsOrder == ResultsOrder.Descendente)
+                        getPaymentMethods = getPaymentMethods.OrderBy(x => x.LimitValue).OrderByDescending(x => x.LimitValue).ToList();
+                    else
+                        getPaymentMethods = getPaymentMethods.OrderBy(x => x.LimitValue).ToList();
+                }
+                else if (paymentMethod.PaymentMethodsOrderType == PaymentMethodOrderType.Fechamento)
+                {
+                    if (paymentMethod.PaymentMethodsOrder == ResultsOrder.Descendente)
+                        getPaymentMethods = getPaymentMethods.OrderBy(x => x.ReceiptClosingDay).OrderByDescending(x => x.ReceiptClosingDay).ToList();
+                    else
+                        getPaymentMethods = getPaymentMethods.OrderBy(x => x.ReceiptClosingDay).ToList();
+                }
+                else
+                {
+                    if (paymentMethod.PaymentMethodsOrder == ResultsOrder.Descendente)
+                        getPaymentMethods = getPaymentMethods.OrderBy(x => x.CurrentValue).OrderByDescending(x => x.CurrentValue).ToList();
+                    else
+                        getPaymentMethods = getPaymentMethods.OrderBy(x => x.CurrentValue).ToList();
+                }
+
+                if(paymentMethod.PaymentMethodsFilterValue != String.Empty && paymentMethod.PaymentMethodsFilterValue != null)
+                {
+                    if (paymentMethod.PaymentMethodsFilterType == PaymentMethodFilterType.ValorLimite)
+                        getPaymentMethods = getPaymentMethods.Where(x => x.LimitValue == Convert.ToDouble(paymentMethod.PaymentMethodsFilterValue)).ToList();
+                    else if(paymentMethod.PaymentMethodsFilterType == PaymentMethodFilterType.ValorAtual)
+                        getPaymentMethods = getPaymentMethods.Where(x => x.CurrentValue == Convert.ToDouble(paymentMethod.PaymentMethodsFilterValue)).ToList();
+                    else if(paymentMethod.PaymentMethodsFilterType == PaymentMethodFilterType.Bandeira)
+                        getPaymentMethods = getPaymentMethods.Where(x => x.Flag == paymentMethod.PaymentMethodsFilterValue).ToList();
+                    else if(paymentMethod.PaymentMethodsFilterType == PaymentMethodFilterType.Tipo)
+                        getPaymentMethods = getPaymentMethods.Where(x => x.Type.ToString() == paymentMethod.PaymentMethodsFilterValue).ToList();
+                }
+
+                paymentMethod.PaymentMethods = getPaymentMethods;
+                return View(paymentMethod);
+            }
+            return View();
+        }
+
         // GET: PaymentMethods
         [Authorize]
         public async Task<IActionResult> Index()
         {
-              return View(await _context.PaymentMethod.Where(c => c.UserId == GetUserId().Result && c.Flag != "Dinheiro").ToListAsync());
+            List<PaymentMethod> getPaymentMethods = await _context.PaymentMethod.Where(c => c.UserId == GetUserId().Result && c.Flag != "Dinheiro").ToListAsync();
+            PaymentMethodsQuery paymentMethod = new PaymentMethodsQuery();
+            paymentMethod.PaymentMethods = getPaymentMethods;
+
+            return View(paymentMethod);
         }
 
         // GET: PaymentMethods/Details/5
