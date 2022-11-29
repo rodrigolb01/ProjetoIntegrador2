@@ -51,7 +51,7 @@ namespace Expenses_Manager.Controllers
                     else
                         getReceipts = getReceipts.OrderBy(x => x.Year).ToList();
                 }
-                else
+                else if (receipts.ReceiptsOrderType == ReceiptOrderType.Valor)
                 {
                     if (receipts.ReceiptsOrder == ResultsOrder.Descendente)
                         getReceipts = getReceipts.OrderBy(x => x.TotalValue).OrderByDescending(x => x.TotalValue).ToList();
@@ -102,7 +102,7 @@ namespace Expenses_Manager.Controllers
         {
             if (ModelState.IsValid)
             {
-                List<Expense> expenses = new List<Expense>();
+                List<Expense> getExpenses = new List<Expense>();
                 receipt.Id = (int)TempData["currentReceiptId"];
 
                 switch (receipt.ExpensesOrderType)
@@ -110,20 +110,44 @@ namespace Expenses_Manager.Controllers
                     case ExpenseOrderType.Dia:
                         {
                             if(receipt.ExpensesOrder == ResultsOrder.Descendente)
-                                expenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.date.Day).OrderByDescending(x => x.date.Day).ToListAsync().Result;
+                                getExpenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.date.Day).OrderByDescending(x => x.date.Day).ToListAsync().Result;
                             else
-                                expenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.date.Day).ToListAsync().Result;
+                                getExpenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.date.Day).ToListAsync().Result;
                         }
                         break;
                     case ExpenseOrderType.Valor:
                         {
                             if(receipt.ExpensesOrder == ResultsOrder.Descendente)
-                                expenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.Value).OrderByDescending(x => x.Value).ToListAsync().Result;
+                                getExpenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.Value).OrderByDescending(x => x.Value).ToListAsync().Result;
                             else
-                                expenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.Value).ToListAsync().Result;
+                                getExpenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.Value).ToListAsync().Result;
                         }
                         break;
-                    default: expenses = _context.Expense.OrderBy(x => x.date.Day).Where(e => e.ReceiptId == receipt.Id).ToListAsync().Result; break;
+                    case ExpenseOrderType.Descricao:
+                        {
+                            if (receipt.ExpensesOrder == ResultsOrder.Descendente)
+                                getExpenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.Name).OrderByDescending(x => x.Name).ToListAsync().Result;
+                            else
+                                getExpenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.Name).ToListAsync().Result;
+
+                        }
+                        break;
+                    case ExpenseOrderType.Categoria:
+                        {
+                            foreach (Expense e in getExpenses)
+                            {
+                                Category c = _context.Category.FirstOrDefaultAsync(x => x.Id == e.CategoryId).Result;
+                                e.CategoryName = c.Name;
+                            }
+
+                            if (receipt.ExpensesOrder == ResultsOrder.Descendente)                        
+                                getExpenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.CategoryName).OrderByDescending(x => x.CategoryName).ToListAsync().Result;
+                            
+                            else
+                                getExpenses = _context.Expense.Where(e => e.ReceiptId == receipt.Id).OrderBy(x => x.CategoryName).ToListAsync().Result;
+                        }
+                        break;
+                    default: getExpenses = _context.Expense.OrderBy(x => x.date.Day).Where(e => e.ReceiptId == receipt.Id).ToListAsync().Result; break;
                 }
 
                 if(receipt.ExpensesFilterValue != String.Empty && receipt.ExpensesFilterValue != null)
@@ -132,17 +156,17 @@ namespace Expenses_Manager.Controllers
                     {
                         switch (receipt.ExpensesFilterType)
                         {
-                            case ExpenseFilterType.Dia: expenses = expenses.Where(x => x.date.Day == Convert.ToInt32(receipt.ExpensesFilterValue)).ToList(); break;
-                            case ExpenseFilterType.Valor: expenses = expenses.Where(x => x.Value == Convert.ToDouble(receipt.ExpensesFilterValue)).ToList(); break;
-                            case ExpenseFilterType.Status: expenses = expenses.Where(x => x.Status.ToString() == receipt.ExpensesFilterValue).ToList(); break;
-                            case ExpenseFilterType.Pagamento: expenses = expenses.Where(x => x.PaymentMethodId == Convert.ToInt32(receipt.ExpensesFilterValue)).ToList(); break;
+                            case ExpenseFilterType.Dia: getExpenses = getExpenses.Where(x => x.date.Day == Convert.ToInt32(receipt.ExpensesFilterValue)).ToList(); break;
+                            case ExpenseFilterType.Valor: getExpenses = getExpenses.Where(x => x.Value == Convert.ToDouble(receipt.ExpensesFilterValue)).ToList(); break;
+                            case ExpenseFilterType.Status: getExpenses = getExpenses.Where(x => x.Status.ToString() == receipt.ExpensesFilterValue).ToList(); break;
+                            case ExpenseFilterType.Pagamento: getExpenses = getExpenses.Where(x => x.PaymentMethodId == Convert.ToInt32(receipt.ExpensesFilterValue)).ToList(); break;
                         }
                     }
                 }
 
-                receipt.Expenses = expenses;
+                receipt.Expenses = getExpenses;
 
-                var hasPedingPayments = expenses.Any(e => e.Status == PaymentStatus.Pendente);
+                var hasPedingPayments = getExpenses.Any(e => e.Status == PaymentStatus.Pendente);
                 receipt.PendingPayments = hasPedingPayments;
 
                 //salva a fatura sendo consultada atualmente para consulta das despezas

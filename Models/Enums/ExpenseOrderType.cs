@@ -2,7 +2,9 @@
 {
     public enum ExpenseOrderType
     {
+        Descricao,
         Dia,
-        Valor
+        Valor,
+        Categoria
     }
 }

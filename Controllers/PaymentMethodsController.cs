@@ -34,7 +34,7 @@ namespace Expenses_Manager.Controllers
         {
             if(ModelState.IsValid)
             {
-                List<PaymentMethod> getPaymentMethods = await _context.PaymentMethod.Where(x => x.UserId == GetUserId().Result).ToListAsync();
+                List<PaymentMethod> getPaymentMethods = await _context.PaymentMethod.Where(x => x.UserId == GetUserId().Result && x.Type != PaymentType.Dinheiro).ToListAsync();
 
                 if(paymentMethod.PaymentMethodsOrderType == PaymentMethodOrderType.ValorLimite)
                 {
@@ -50,12 +50,26 @@ namespace Expenses_Manager.Controllers
                     else
                         getPaymentMethods = getPaymentMethods.OrderBy(x => x.ReceiptClosingDay).ToList();
                 }
-                else
+                else if (paymentMethod.PaymentMethodsOrderType == PaymentMethodOrderType.ValorAtual)
                 {
                     if (paymentMethod.PaymentMethodsOrder == ResultsOrder.Descendente)
                         getPaymentMethods = getPaymentMethods.OrderBy(x => x.CurrentValue).OrderByDescending(x => x.CurrentValue).ToList();
                     else
                         getPaymentMethods = getPaymentMethods.OrderBy(x => x.CurrentValue).ToList();
+                }
+                else if (paymentMethod.PaymentMethodsOrderType == PaymentMethodOrderType.Bandeira)
+                {
+                    if (paymentMethod.PaymentMethodsOrder == ResultsOrder.Descendente)
+                        getPaymentMethods = getPaymentMethods.OrderBy(x => x.Flag).OrderByDescending(x => x.Flag).ToList();
+                    else
+                        getPaymentMethods = getPaymentMethods.OrderBy(x => x.Flag).ToList();
+                }
+                else if (paymentMethod.PaymentMethodsOrderType == PaymentMethodOrderType.NomeUsuario)
+                {
+                    if (paymentMethod.PaymentMethodsOrder == ResultsOrder.Descendente)
+                        getPaymentMethods = getPaymentMethods.OrderBy(x => x.HolderName).OrderByDescending(x => x.HolderName).ToList();
+                    else
+                        getPaymentMethods = getPaymentMethods.OrderBy(x => x.HolderName).ToList();
                 }
 
                 if(paymentMethod.PaymentMethodsFilterValue != String.Empty && paymentMethod.PaymentMethodsFilterValue != null)

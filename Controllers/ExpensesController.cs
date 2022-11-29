@@ -227,9 +227,16 @@ namespace Expenses_Manager.Controllers
                     thisReceipt.TotalValue += expense.Value;
 
                     _context.Update(thisReceipt);
-
                     await _context.SaveChangesAsync();
-                } 
+                }
+
+                if (expense.Status == PaymentStatus.Pendente)
+                {
+                    currentReceipt.PendingPayments = true;
+                    _context.Update(currentReceipt);
+                    await _context.SaveChangesAsync();
+                }
+
                 return Redirect("/Receipts/Details/"+currentReceiptId);
             }
             return View(expense);
@@ -449,7 +456,14 @@ namespace Expenses_Manager.Controllers
                         _context.Update(thisReceipt);
                         await _context.SaveChangesAsync();
                     }
-               
+
+                    if (expense.Status == PaymentStatus.Pendente)
+                    {
+                        currentReceipt.PendingPayments = true;
+                        _context.Update(currentReceipt);
+                        await _context.SaveChangesAsync();
+                    }
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -516,7 +530,24 @@ namespace Expenses_Manager.Controllers
                     currentPaymentMethod.CurrentValue = currentPaymentMethod.CurrentValue - expense.Value;
                     _context.Update(currentPaymentMethod);
                 }
-                 _context.Expense.Remove(expense);
+
+                //antes de atualizar verificar se fora a despeza removida ainda ha alguma outra pendente
+                if (expense.Status == PaymentStatus.Pendente)
+                {
+                    Receipt currentReceipt = _context.Receipt.FirstOrDefaultAsync(x => x.Id == expense.ReceiptId).Result;
+                    List<Expense> currentReceiptExpenses = await _context.Expense.Where(x => x.ReceiptId == currentReceipt.Id && x.Id != expense.Id).ToListAsync();
+
+                    if(!(currentReceiptExpenses.Any(x => x.Status == PaymentStatus.Pendente)))
+                    {
+                        currentReceipt.PendingPayments = false;
+                        _context.Update(currentReceipt);
+                    }
+
+                    _context.Update(currentReceipt);
+                    await _context.SaveChangesAsync();
+                }
+
+                _context.Expense.Remove(expense);
             }          
             await _context.SaveChangesAsync();
 

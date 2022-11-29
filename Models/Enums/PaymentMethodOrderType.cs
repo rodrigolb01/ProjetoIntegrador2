@@ -4,6 +4,8 @@
     {
         ValorAtual,
         ValorLimite,
-        Fechamento
+        Fechamento,
+        Bandeira,
+        NomeUsuario
     }
 }

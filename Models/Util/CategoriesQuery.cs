@@ -10,7 +10,7 @@ namespace Expenses_Manager.Models.Util
         public List<Category>? Categories { get; set; }
         [NotMapped]
         [DisplayName("Ordernar por")]
-        public CategoryOrderType CategoriesOrderType { get; set; } = CategoryOrderType.OrdemAlfabetica;
+        public CategoryOrderType CategoriesOrderType { get; set; } = CategoryOrderType.Nome;
         [NotMapped]
         [DisplayName("Filtrar por")]
         public CategoryFilterType CategoriesFilterType { get; set; } = CategoryFilterType.Nada;
