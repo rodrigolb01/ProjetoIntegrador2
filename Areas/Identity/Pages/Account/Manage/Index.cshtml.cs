@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Expenses_Manager.Areas.Identity.Pages.Account.Manage
 {
@@ -52,7 +53,7 @@ namespace Expenses_Manager.Areas.Identity.Pages.Account.Manage
             public string PhoneNumber { get; set; }
             [Display(Name = "Profile Picture Url")]
             public string ProfileUrl { get; set; }
-            public string Username { get; set; }
+            public string UserName { get; set; }
         }
 
         //Recupera o Id do usuario que esta logado
@@ -88,7 +89,7 @@ namespace Expenses_Manager.Areas.Identity.Pages.Account.Manage
             {
                 PhoneNumber = phoneNumber,
                 ProfileUrl = profileUrl,
-                Username = userName
+                UserName = userName
             };
         }
 
@@ -135,10 +136,13 @@ namespace Expenses_Manager.Areas.Identity.Pages.Account.Manage
 
             profileUserData.ProfilePicture = Input.ProfileUrl;
 
-            if(Input.Username != String.Empty)
-                profileUser.UserName = Input.Username;
+            if (Input.UserName == null)
+                profileUserData.Name = " ";
+            else
+                profileUserData.Name = Input.UserName;
 
             _context.Update(profileUserData);
+
             await _context.SaveChangesAsync();
 
             await _signInManager.RefreshSignInAsync(profileUser);

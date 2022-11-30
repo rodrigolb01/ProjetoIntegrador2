@@ -26,13 +26,13 @@
                 Tipo
             </th>
             <th>
-                Fechamento
+                Fechamento da fatura
             </th>
             <th>
                 Limite
             </th>
             <th>
-                Valor atual
+                Saldo
             </th>
             <th></th>
         </tr>
@@ -58,11 +58,11 @@
             <td>
                 @if(item.Type == Expenses_Manager.Models.Enums.PaymentType.Debito)
                 {
-                        <span>Receita do mes</span>
+                    <span>Receita do mes</span>
                 }
                 else
                 {
-                    @Html.DisplayFor(modelItem => item.LimitValue)
+                    <span>R$ @(item.LimitValue)</span>
                 }
             </td>
             <td>
@@ -72,7 +72,7 @@
                 }
                 else
                 {
-                    @Html.DisplayFor(modelItem => item.CurrentValue)
+                    <span>R$  @(item.LimitValue - item.CurrentValue)</span>
                 }
             </td>
             <td>

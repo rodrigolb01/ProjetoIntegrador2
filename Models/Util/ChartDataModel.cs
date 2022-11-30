@@ -1,6 +1,4 @@
-﻿using Expenses_Manager.Models.Util;
-
-namespace Expenses_Manager.Models
+﻿namespace Expenses_Manager.Models.Util
 {
     public class ChartDataModel
     {

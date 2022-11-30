@@ -65,11 +65,11 @@ namespace Expenses_Manager.Controllers
             var userCaregoriesList = categoriesList.Where(e => e.UserId == GetUserId().Result);
             var userPaymentMethodsList = paymentMethodsList.Where(p => p.UserId == GetUserId().Result);
 
-            Expense expenseModel = new Expense();
-            expenseModel.AvailableCategories = new SelectList(userCaregoriesList, "Id", "Value");
-            expenseModel.AvailablePaymentMethods = new SelectList(userPaymentMethodsList, "Id", "Value");
+            Expense expense = new Expense();
+            expense.AvailableCategories = new SelectList(userCaregoriesList, "Id", "Value");
+            expense.AvailablePaymentMethods = new SelectList(userPaymentMethodsList, "Id", "Value");
 
-            return View(expenseModel);
+            return View(expense);
         }
 
         // POST: Expenses/Create
@@ -97,7 +97,7 @@ namespace Expenses_Manager.Controllers
 
                 Receipt currentReceipt = _context.Receipt.FirstOrDefaultAsync(x => x.Id == currentReceiptId).Result;
                 PaymentMethod currentPaymentMethod = _context.PaymentMethod.FirstOrDefaultAsync(x => x.Id == expense.PaymentMethodId).Result;
-                bool isReceiptClosed = expense.date > currentPaymentMethod.ReceiptClosingDay;
+                bool isReceiptClosed = expense.date.Day >= currentPaymentMethod.ReceiptClosingDay.Day;
 
                 //Em caso de: data > fechamento da receita
                 //Aviso: Esta receita ja esta fechada, lancar na receita do proximo mes
@@ -117,7 +117,7 @@ namespace Expenses_Manager.Controllers
 
                 //Em caso de: compra.valor > (cartao.limite - cartao.valorAtual)
                 //Aviso: Saldo insuficiente, escolher outro metodo de pagamento
-                if (currentPaymentMethod.Type == PaymentType.Credito)
+                if (currentPaymentMethod.Type != PaymentType.Dinheiro)
                 {
                     if (expense.Value > currentPaymentMethod.LimitValue - currentPaymentMethod.CurrentValue)
                     {
@@ -125,7 +125,10 @@ namespace Expenses_Manager.Controllers
                         return View(expense);
                     }
                     else
-                        currentPaymentMethod.CurrentValue += expense.Value;
+                    {
+                        double val = (double)expense.Value;
+                        currentPaymentMethod.CurrentValue += val;
+                    }
                 }
 
                 //Em caso de: parcelas > 1 && pagamento em credito
@@ -174,17 +177,19 @@ namespace Expenses_Manager.Controllers
                         if (receipt != null)
                         {
                             installment.ReceiptId = receipt.Id;
-                            receipt.TotalValue += installment.Value;
+                            double val = (double)installment.Value;
+                            receipt.TotalValue += val;
                         }
                         else
                         {
+                            double val = (double)installment.Value;
                             Receipt newReceipt = new Receipt()
                             {
                                 UserId = GetUserId().Result,
                                 Month = currentDate.Month,
                                 Year = currentDate.Year,
                                 Date = currentDate,
-                                TotalValue = installment.Value,
+                                TotalValue = val,
                                 PendingPayments = true
                             };
 
@@ -224,7 +229,8 @@ namespace Expenses_Manager.Controllers
 
                     //update total cost of receipt
                     Receipt thisReceipt = _context.Receipt.FirstOrDefaultAsync(x => x.Id == expense.ReceiptId).Result;
-                    thisReceipt.TotalValue += expense.Value;
+                    double val = (double)expense.Value;
+                    thisReceipt.TotalValue += val;
 
                     _context.Update(thisReceipt);
                     await _context.SaveChangesAsync();
@@ -302,7 +308,7 @@ namespace Expenses_Manager.Controllers
 
                     Receipt currentReceipt = _context.Receipt.FirstOrDefaultAsync(x => x.Id == currentReceiptId).Result;
                     PaymentMethod currentPaymentMethod = _context.PaymentMethod.FirstOrDefaultAsync(x => x.Id == expense.PaymentMethodId).Result;
-                    bool isReceiptClosed = expense.date > currentPaymentMethod.ReceiptClosingDay;
+                    bool isReceiptClosed = expense.date.Day >= currentPaymentMethod.ReceiptClosingDay.Day;
 
                     //Em caso de: data > fechamento da receita
                     //Aviso: Esta receita ja esta fechada, lancar na receita do proximo mes
@@ -322,7 +328,7 @@ namespace Expenses_Manager.Controllers
 
                     //Em caso de: compra.valor > (cartao.limite - cartao.valorAtual)
                     //Aviso: Saldo insuficiente
-                    if (currentPaymentMethod.Type == PaymentType.Credito)
+                    if (currentPaymentMethod.Type != PaymentType.Dinheiro)
                     {
                         //como nao sabemos qual era o saldo do cartao antes de adicionar a despeza, precisa recalcular todo o saldo
                         //somando todas as despezas que usaram o cartao excluindo a atual                       
@@ -332,7 +338,10 @@ namespace Expenses_Manager.Controllers
 
                         foreach (Expense e in currentReceiptExpenses)
                             if (e.Id != id)
-                                currentPaymentMethodRecalculatedValue += e.Value;
+                            {
+                                double val = (double)e.Value;
+                                currentPaymentMethodRecalculatedValue += val;
+                            }
 
                         currentPaymentMethod.CurrentValue = currentPaymentMethodRecalculatedValue;
 
@@ -342,7 +351,10 @@ namespace Expenses_Manager.Controllers
                             return View(expense);
                         }
                         else
-                            currentPaymentMethod.CurrentValue += expense.Value;
+                        {
+                            double val = (double)expense.Value;
+                            currentPaymentMethod.CurrentValue += val;
+                        }
                     }
 
                     //Em caso de: parcelas > 1 && pagamento em credito
@@ -358,7 +370,6 @@ namespace Expenses_Manager.Controllers
                         {
                             finalMonth = (int)(currentMonth + expense.Installments);
                             finalMonth = finalMonth - 12;
-
                             finalYear = currentYear + 1;
                         }
                         else
@@ -391,17 +402,19 @@ namespace Expenses_Manager.Controllers
                             if (receipt != null)
                             {
                                 installment.ReceiptId = receipt.Id;
-                                receipt.TotalValue += installment.Value;
+                                double val = (double)installment.Value;
+                                receipt.TotalValue += val;
                             }
                             else
                             {
+                                double val = (double)installment.Value; 
                                 Receipt newReceipt = new Receipt()
                                 {
                                     UserId = GetUserId().Result,
                                     Month = currentDate.Month,
                                     Year = currentDate.Year,
                                     Date = currentDate,
-                                    TotalValue = installment.Value,
+                                    TotalValue = val,
                                     PendingPayments = true
                                 };
 
@@ -421,7 +434,6 @@ namespace Expenses_Manager.Controllers
                             if (nextMonth > 12)
                             {
                                 nextMonth = nextMonth - 12;
-
                                 currentDate = new DateTime(currentDate.Year + 1, nextMonth, expense.date.Day, DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second);
                             }
                             else
@@ -448,7 +460,8 @@ namespace Expenses_Manager.Controllers
                         double totalValue = 0;
                         foreach (Expense e in thisReceiptExpenses)
                         {
-                            totalValue += e.Value;
+                            double val = (double)e.Value;
+                            totalValue += val;
                         }
 
                         thisReceipt.TotalValue = totalValue;
@@ -518,7 +531,8 @@ namespace Expenses_Manager.Controllers
             {
                 //atualizar valor atual da fatura
                 Receipt thisReceipt = _context.Receipt.FirstOrDefaultAsync(x => x.Id == expense.ReceiptId).Result;
-                thisReceipt.TotalValue = thisReceipt.TotalValue - expense.Value;
+                double val = (double)expense.Value;
+                thisReceipt.TotalValue = thisReceipt.TotalValue - val;
 
                 _context.Update(thisReceipt);
 
@@ -527,7 +541,7 @@ namespace Expenses_Manager.Controllers
 
                 if (currentPaymentMethod.Type == PaymentType.Credito)
                 {
-                    currentPaymentMethod.CurrentValue = currentPaymentMethod.CurrentValue - expense.Value;
+                    currentPaymentMethod.CurrentValue = currentPaymentMethod.CurrentValue - val;
                     _context.Update(currentPaymentMethod);
                 }
 

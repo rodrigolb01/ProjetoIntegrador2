@@ -284,7 +284,8 @@ namespace Expenses_Manager.Controllers
                     {
                         //extornar do cartao
                         var expensePaymentMethod = _context.PaymentMethod.FirstOrDefaultAsync(x => x.Id == e.PaymentMethodId).Result;
-                        expensePaymentMethod.CurrentValue = Math.Round(expensePaymentMethod.CurrentValue - e.Value, 2);
+                        double val = (double)e.Value;
+                        expensePaymentMethod.CurrentValue = Math.Round(expensePaymentMethod.CurrentValue - val, 2);
 
                         if (expensePaymentMethod.CurrentValue < 0) // caso haja algum erro de calculo (melhorar depois)
                             expensePaymentMethod.CurrentValue = 0;
