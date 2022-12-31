@@ -23,7 +23,7 @@ namespace Expenses_Manager.Controllers
         public async Task<string> GetUserId()
         {
             var loggedUserName = User.Identity.Name;
-            var getUser = _context.Users.FirstOrDefaultAsync(x => x.UserName == loggedUserName);
+            var getUser = _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.UserName == loggedUserName);
 
             return getUser.Result.Id;
         }

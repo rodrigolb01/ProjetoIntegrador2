@@ -31,8 +31,11 @@ namespace Expenses_Manager.Areas.Identity.Pages.Account.Manage
             _userManager = userManager;
             _signInManager = signInManager;
 
+            var builder = WebApplication.CreateBuilder();
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
             var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=aspnet-Expenses_Manager-4FDCB869-85CC-48D7-83C9-BB00B4BAFD6F;Trusted_Connection=True;MultipleActiveResultSets=true")
+                .UseSqlServer(connectionString)
                 .EnableSensitiveDataLogging()
                 .Options;
             

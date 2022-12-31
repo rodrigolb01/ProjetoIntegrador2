@@ -31,7 +31,7 @@ namespace Expenses_Manager.Controllers
         public async Task<string> GetUserId()
         {
             var loggedUserName = User.Identity.Name;
-            var getUser = _context.Users.FirstOrDefaultAsync(x => x.UserName == loggedUserName);
+            var getUser = _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.UserName == loggedUserName);
 
             return getUser.Result.Id;
         }
@@ -263,11 +263,11 @@ namespace Expenses_Manager.Controllers
                 return NotFound();
             }
 
-            var getUserCategories = _context.Category.OrderBy(s => s.Name).Select(x => new { Id = x.Id, Value = x.Name, UserId = x.UserId });
-            var getUserPaymentMethods = _context.PaymentMethod.OrderBy(s => s.Flag).Select(x => new { Id = x.Id, Value = x.Type != PaymentType.Dinheiro ? x.Type.ToString() + " " + x.Flag + " terminado em " + x.Number.Substring(x.Number.Length - 2) : x.Flag, UserId = x.UserId });
+            var getUserCategories = _context.Category.AsNoTracking().OrderBy(s => s.Name).Select(x => new { Id = x.Id, Value = x.Name, UserId = x.UserId });
+            var getUserPaymentMethods = _context.PaymentMethod.AsNoTracking().OrderBy(s => s.Flag).Select(x => new { Id = x.Id, Value = x.Type != PaymentType.Dinheiro ? x.Type.ToString() + " " + x.Flag + " terminado em " + x.Number.Substring(x.Number.Length - 2) : x.Flag, UserId = x.UserId });
 
-            var userCaregoriesList = getUserCategories.Where(e => e.UserId == GetUserId().Result);
-            var userPaymentMethodsList = getUserPaymentMethods.Where(p => p.UserId == GetUserId().Result);
+            var userCaregoriesList = getUserCategories.AsNoTracking().Where(e => e.UserId == GetUserId().Result);
+            var userPaymentMethodsList = getUserPaymentMethods.AsNoTracking().Where(p => p.UserId == GetUserId().Result);
 
             expense.AvailableCategories = new SelectList(userCaregoriesList, "Id", "Value");
             expense.AvailablePaymentMethods = new SelectList(userPaymentMethodsList, "Id", "Value");
@@ -293,8 +293,8 @@ namespace Expenses_Manager.Controllers
             {
                 try
                 {
-                    var getUserCategories = _context.Category.OrderBy(s => s.Name).Select(x => new { Id = x.Id, Value = x.Name, UserId = x.UserId });
-                    var getUserPaymentMethods = _context.PaymentMethod.OrderBy(s => s.Flag).Select(x => new { Id = x.Id, Value = x.Type != PaymentType.Dinheiro ? x.Type.ToString() + " " + x.Flag + " terminado em " + x.Number.Substring(x.Number.Length - 2) : x.Flag, UserId = x.UserId });
+                    var getUserCategories = _context.Category.AsNoTracking().OrderBy(s => s.Name).Select(x => new { Id = x.Id, Value = x.Name, UserId = x.UserId });
+                    var getUserPaymentMethods = _context.PaymentMethod.AsNoTracking().OrderBy(s => s.Flag).Select(x => new { Id = x.Id, Value = x.Type != PaymentType.Dinheiro ? x.Type.ToString() + " " + x.Flag + " terminado em " + x.Number.Substring(x.Number.Length - 2) : x.Flag, UserId = x.UserId });
 
                     var userCaregoriesList = getUserCategories.Where(e => e.UserId == GetUserId().Result);
                     var userPaymentMethodsList = getUserPaymentMethods.Where(p => p.UserId == GetUserId().Result);
@@ -306,8 +306,8 @@ namespace Expenses_Manager.Controllers
                     //salva id da receita atual para futuras operacoes
                     TempData["currentReceiptId"] = currentReceiptId;
 
-                    Receipt currentReceipt = _context.Receipt.FirstOrDefaultAsync(x => x.Id == currentReceiptId).Result;
-                    PaymentMethod currentPaymentMethod = _context.PaymentMethod.FirstOrDefaultAsync(x => x.Id == expense.PaymentMethodId).Result;
+                    Receipt currentReceipt = _context.Receipt.AsNoTracking().FirstOrDefaultAsync(x => x.Id == currentReceiptId).Result;
+                    PaymentMethod currentPaymentMethod = _context.PaymentMethod.AsNoTracking().FirstOrDefaultAsync(x => x.Id == expense.PaymentMethodId).Result;
                     bool isReceiptClosed = expense.date.Day >= currentPaymentMethod.ReceiptClosingDay.Day;
 
                     //Em caso de: data > fechamento da receita
@@ -332,7 +332,7 @@ namespace Expenses_Manager.Controllers
                     {
                         //como nao sabemos qual era o saldo do cartao antes de adicionar a despeza, precisa recalcular todo o saldo
                         //somando todas as despezas que usaram o cartao excluindo a atual                       
-                        List<Expense> currentReceiptExpenses = _context.Expense.Where(x => x.PaymentMethodId == currentPaymentMethod.Id).ToListAsync().Result;
+                        List<Expense> currentReceiptExpenses = _context.Expense.AsNoTracking().Where(x => x.PaymentMethodId == currentPaymentMethod.Id).ToListAsync().Result;
 
                         double currentPaymentMethodRecalculatedValue = 0; ;
 
@@ -395,10 +395,10 @@ namespace Expenses_Manager.Controllers
                                 Status = PaymentStatus.Pendente,
                                 Installments = expense.Installments,
                                 CategoryId = expense.CategoryId,
-                                CategoryName = _context.Category.FirstOrDefaultAsync(x => x.Id == expense.CategoryId).Result.Name,
+                                CategoryName = _context.Category.AsNoTracking().FirstOrDefaultAsync(x => x.Id == expense.CategoryId).Result.Name,
                             };
                             string userId = GetUserId().Result;
-                            Receipt receipt = _context.Receipt.Where(x => x.UserId == userId).FirstOrDefaultAsync(x => x.Month == currentDate.Month).Result;
+                            Receipt receipt = _context.Receipt.AsNoTracking().Where(x => x.UserId == userId).FirstOrDefaultAsync(x => x.Month == currentDate.Month).Result;
                             if (receipt != null)
                             {
                                 installment.ReceiptId = receipt.Id;
@@ -421,7 +421,7 @@ namespace Expenses_Manager.Controllers
                                 _context.Receipt.Add(newReceipt);
                                 await _context.SaveChangesAsync();
 
-                                int newReceiptId = _context.Receipt.Where(x => x.UserId == userId).FirstOrDefaultAsync(x => x.Month == currentDate.Month).Result.Id;
+                                int newReceiptId = _context.Receipt.AsNoTracking().Where(x => x.UserId == userId).FirstOrDefaultAsync(x => x.Month == currentDate.Month).Result.Id;
 
                                 installment.ReceiptId = newReceiptId;
                             }
@@ -446,7 +446,7 @@ namespace Expenses_Manager.Controllers
                     {
                         expense.UserId = GetUserId().Result;
                         expense.ReceiptId = (int)TempData["currentReceiptId"];
-                        expense.CategoryName = _context.Category.FirstOrDefaultAsync(x => x.Id == expense.CategoryId).Result.Name;
+                        expense.CategoryName = _context.Category.AsNoTracking().FirstOrDefaultAsync(x => x.Id == expense.CategoryId).Result.Name;
                         expense.PaymentMethodName = "id: " + currentPaymentMethod.Id + " " + currentPaymentMethod.Type.ToString() + " " + currentPaymentMethod.Flag + " terminado em " + currentPaymentMethod.Number.Substring(currentPaymentMethod.Number.Length - 2);
 
                         _context.Update(expense);
@@ -454,8 +454,8 @@ namespace Expenses_Manager.Controllers
                         await _context.SaveChangesAsync();
 
                         //update total value of the receipt
-                        Receipt thisReceipt = _context.Receipt.FirstOrDefaultAsync(x => x.Id == expense.ReceiptId).Result;
-                        List<Expense> thisReceiptExpenses = _context.Expense.Where(x => x.ReceiptId == thisReceipt.Id).ToListAsync().Result;
+                        Receipt thisReceipt = _context.Receipt.AsNoTracking().FirstOrDefaultAsync(x => x.Id == expense.ReceiptId).Result;
+                        List<Expense> thisReceiptExpenses = _context.Expense.AsNoTracking().Where(x => x.ReceiptId == thisReceipt.Id).ToListAsync().Result;
 
                         double totalValue = 0;
                         foreach (Expense e in thisReceiptExpenses)
